@@ -2,25 +2,23 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { formatMoneyCompact, formatMoney } from "@/lib/money";
+import { formatMoneyCompact } from "@/lib/money";
 import { formatDate, getCurrentMonthRange, todayManilaAsUtc } from "@/lib/dates";
-import { buildPaymentWatchList } from "@/lib/payment-watch";
+import { buildPaymentWatchList, getPaidCents } from "@/lib/payment-watch";
 import { detectConflicts } from "@/lib/conflicts";
-import { DeliveryStatusPill } from "@/components/ui/StatusPill";
+import { DeliveryStatusPill, BookingStatusPill } from "@/components/ui/StatusPill";
 import QuickActionBar from "@/components/dashboard/QuickActionBar";
 import PaymentWatchClient from "@/components/dashboard/PaymentWatchClient";
 
 export default async function DashboardPage() {
   const { start: monthStart, end: monthEnd } = getCurrentMonthRange();
   const today = todayManilaAsUtc();
-  const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 31);
 
   const [
     monthIncomeAgg,
     monthExpenseAgg,
-    confirmedBookings,
-    inEditingCount,
-    upcomingBookings,
+    allActiveBookings,
+    inPostProdCount,
     recentTransactions,
   ] = await Promise.all([
     db.transaction.aggregate({
@@ -32,19 +30,15 @@ export default async function DashboardPage() {
       _sum: { amountCents: true },
     }),
     db.booking.findMany({
-      where: { status: "CONFIRMED" },
+      where: { status: { not: "CANCELLED" } },
       include: { client: true, transactions: true },
       orderBy: { eventDate: "asc" },
     }),
-    db.booking.count({ where: { deliveryStatus: "EDITING" } }),
-    db.booking.findMany({
+    db.booking.count({
       where: {
-        status: "CONFIRMED",
-        eventDate: { gte: today, lte: nextMonthEnd },
+        status: { not: "CANCELLED" },
+        deliveryStatus: { in: ["EDITING", "READY"] },
       },
-      include: { client: true },
-      orderBy: { eventDate: "asc" },
-      take: 8,
     }),
     db.transaction.findMany({
       orderBy: { date: "desc" },
@@ -53,11 +47,38 @@ export default async function DashboardPage() {
     }),
   ]);
 
+  // 1. Month Financial Metrics
   const thisMonthIncome = monthIncomeAgg._sum.amountCents ?? 0;
   const thisMonthExpenses = monthExpenseAgg._sum.amountCents ?? 0;
   const thisMonthNet = thisMonthIncome - thisMonthExpenses;
 
-  const rawPaymentWatch = buildPaymentWatchList(confirmedBookings).slice(0, 5);
+  // 2. Pending Invoices (Total unpaid balances across all active bookings)
+  let totalPendingInvoicesCents = 0;
+  let pendingBookingsCount = 0;
+
+  for (const b of allActiveBookings) {
+    const paid = getPaidCents(b);
+    const balance = b.feeCents - paid;
+    if (balance > 0) {
+      totalPendingInvoicesCents += balance;
+      pendingBookingsCount += 1;
+    }
+  }
+
+  // 3. Shoots Scheduled in Current Month
+  const shootsThisMonth = allActiveBookings.filter((b) => {
+    const d = new Date(b.eventDate);
+    return d >= monthStart && d <= monthEnd;
+  });
+  const confirmedShootsThisMonth = shootsThisMonth.filter((b) => b.status === "CONFIRMED").length;
+
+  // 4. Upcoming Shoots List (from today onwards, or latest active)
+  const upcomingBookings = allActiveBookings
+    .filter((b) => new Date(b.eventDate) >= today)
+    .slice(0, 8);
+
+  // 5. Payment Watch Items
+  const rawPaymentWatch = buildPaymentWatchList(allActiveBookings).slice(0, 5);
   const paymentWatchItems = rawPaymentWatch.map((item) => ({
     booking: {
       id: item.booking.id,
@@ -72,16 +93,8 @@ export default async function DashboardPage() {
     daysOverdue: item.daysOverdue,
   }));
 
-  const pendingPaymentsTotal = paymentWatchItems.reduce(
-    (sum, item) => sum + item.dueCents,
-    0
-  );
-
-  const upcomingThisMonth = confirmedBookings.filter(
-    (b) => new Date(b.eventDate) >= today && new Date(b.eventDate) <= monthEnd
-  ).length;
-
-  const conflicts = detectConflicts(confirmedBookings);
+  // 6. Schedule Conflicts
+  const conflicts = detectConflicts(allActiveBookings);
 
   return (
     <div className="space-y-6 max-w-7xl animate-fade-in pb-10">
@@ -112,6 +125,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      {/* 4 Stat Overview Cards */}
       <section>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
@@ -126,35 +140,44 @@ export default async function DashboardPage() {
             }
             iconBg="bg-emerald-500/10 border-emerald-500/20"
           />
+
           <StatCard
             label="Pending Invoices"
-            value={formatMoneyCompact(pendingPaymentsTotal)}
-            sub={`${paymentWatchItems.length} booking${paymentWatchItems.length !== 1 ? "s" : ""}`}
-            subColor={paymentWatchItems.length > 0 ? "rose" : "slate"}
+            value={formatMoneyCompact(totalPendingInvoicesCents)}
+            sub={`${pendingBookingsCount} booking${pendingBookingsCount === 1 ? "" : "s"}`}
+            subColor={totalPendingInvoicesCents > 0 ? "amber" : "slate"}
             icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-rose-400">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-amber-400">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             }
-            iconBg="bg-rose-500/10 border-rose-500/20"
+            iconBg="bg-amber-500/10 border-amber-500/20"
           />
+
           <StatCard
             label="Shoots This Month"
-            value={upcomingThisMonth.toString()}
-            sub="Confirmed schedule"
-            subColor="slate"
+            value={String(shootsThisMonth.length)}
+            sub={
+              shootsThisMonth.length === 0
+                ? "No shoots scheduled"
+                : confirmedShootsThisMonth === shootsThisMonth.length
+                ? `${confirmedShootsThisMonth} confirmed schedule`
+                : `${confirmedShootsThisMonth} confirmed, ${shootsThisMonth.length - confirmedShootsThisMonth} inquiry`
+            }
+            subColor={shootsThisMonth.length > 0 ? "emerald" : "slate"}
             icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-sky-400">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-blue-400">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
               </svg>
             }
-            iconBg="bg-sky-500/10 border-sky-500/20"
+            iconBg="bg-blue-500/10 border-blue-500/20"
           />
+
           <StatCard
             label="In Post-Production"
-            value={inEditingCount.toString()}
-            sub={inEditingCount > 0 ? "Editing queue active" : "All deliverables clear"}
-            subColor={inEditingCount > 0 ? "amber" : "slate"}
+            value={String(inPostProdCount)}
+            sub={inPostProdCount > 0 ? "Pending deliverables" : "All deliverables clear"}
+            subColor={inPostProdCount > 0 ? "amber" : "slate"}
             icon={
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-amber-400">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
@@ -165,6 +188,7 @@ export default async function DashboardPage() {
         </div>
       </section>
 
+      {/* Upcoming Shoots & Payment Watch Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section className="bg-[#131C2E] rounded-xl border border-slate-800 shadow-md overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75">
@@ -214,12 +238,15 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate group-hover:text-amber-400 transition-colors">
-                        {booking.client.name}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-white truncate group-hover:text-amber-400 transition-colors">
+                          {booking.client.name}
+                        </p>
+                        <BookingStatusPill status={booking.status} />
+                      </div>
                       <p className="text-xs text-slate-400 truncate mt-0.5">
                         {booking.eventType}
-                        {booking.location ? ` · ${booking.location}` : ""}
+                        {booking.location ? ` • ${booking.location}` : ""}
                       </p>
                     </div>
                     <div className="flex-shrink-0 text-right space-y-1">
@@ -280,8 +307,8 @@ export default async function DashboardPage() {
                   <p className="text-xs font-semibold text-white truncate">{tx.description}</p>
                   <p className="text-2xs text-slate-400 mt-0.5">
                     {tx.category}
-                    {tx.booking ? ` · ${tx.booking.client.name}` : ""}
-                    {" · "}{formatDate(new Date(tx.date))}
+                    {tx.booking ? ` • ${tx.booking.client.name}` : ""}
+                    {" • "}{formatDate(new Date(tx.date))}
                   </p>
                 </div>
                 <span

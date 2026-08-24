@@ -15,6 +15,8 @@ export async function createClientAction(formData: FormData): Promise<ActionResu
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Validation error" };
   }
 
+  let newClientId: string | null = null;
+
   try {
     const client = await db.client.create({
       data: {
@@ -24,11 +26,19 @@ export async function createClientAction(formData: FormData): Promise<ActionResu
         notes: parsed.data.notes || null,
       },
     });
+    newClientId = client.id;
     revalidatePath("/clients");
-    redirect(`/clients/${client.id}`);
-  } catch {
+    revalidatePath("/");
+  } catch (err) {
+    console.error("[createClientAction]", err);
     return { ok: false, error: "Failed to create client" };
   }
+
+  if (newClientId) {
+    redirect(`/clients/${newClientId}`);
+  }
+
+  return { ok: true };
 }
 
 export async function updateClientAction(
@@ -42,6 +52,8 @@ export async function updateClientAction(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Validation error" };
   }
 
+  let updated = false;
+
   try {
     await db.client.update({
       where: { id },
@@ -52,17 +64,25 @@ export async function updateClientAction(
         notes: parsed.data.notes || null,
       },
     });
+    updated = true;
     revalidatePath(`/clients/${id}`);
     revalidatePath("/clients");
-    redirect(`/clients/${id}`);
-  } catch {
+    revalidatePath("/");
+  } catch (err) {
+    console.error("[updateClientAction]", err);
     return { ok: false, error: "Failed to update client" };
   }
+
+  if (updated) {
+    redirect(`/clients/${id}`);
+  }
+
+  return { ok: true };
 }
 
 export async function deleteClientAction(id: string): Promise<ActionResult> {
+  let deleted = false;
   try {
-    // Check if client has bookings
     const bookingCount = await db.booking.count({ where: { clientId: id } });
     if (bookingCount > 0) {
       return {
@@ -71,9 +91,17 @@ export async function deleteClientAction(id: string): Promise<ActionResult> {
       };
     }
     await db.client.delete({ where: { id } });
+    deleted = true;
     revalidatePath("/clients");
-  } catch {
+    revalidatePath("/");
+  } catch (err) {
+    console.error("[deleteClientAction]", err);
     return { ok: false, error: "Failed to delete client" };
   }
-  redirect("/clients");
+
+  if (deleted) {
+    redirect("/clients");
+  }
+
+  return { ok: true };
 }

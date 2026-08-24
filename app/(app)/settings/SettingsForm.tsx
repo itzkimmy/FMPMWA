@@ -27,13 +27,18 @@ export default function SettingsForm({ settings }: Props) {
 
     startTransition(async () => {
       try {
-        await saveSettings({
+        const result = await saveSettings({
           currency,
           defaultDepositPercent: depositPercent,
           defaultDueDays,
         });
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
+
+        if (result && !result.ok) {
+          setError(result.error);
+        } else {
+          setSaved(true);
+          setTimeout(() => setSaved(false), 3000);
+        }
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Failed to save settings");
       }

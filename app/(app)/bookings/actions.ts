@@ -9,7 +9,6 @@ import { manilaDateToUtc } from "@/lib/dates";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
-/** Parse fee/deposit inputs from display strings to centavos */
 function parseAmountCents(input: string | undefined | null): number {
   if (!input || input.trim() === "") return 0;
   return parseMoneyCents(input) ?? 0;
@@ -45,6 +44,8 @@ export async function createBookingAction(
     return { ok: false, error: "Fee must be greater than 0" };
   }
 
+  let newBookingId: string | null = null;
+
   try {
     const booking = await db.booking.create({
       data: {
@@ -59,14 +60,19 @@ export async function createBookingAction(
         notes: notes || null,
       },
     });
-
+    newBookingId = booking.id;
     revalidatePath("/bookings");
     revalidatePath("/");
-    redirect(`/bookings/${booking.id}`);
   } catch (err) {
-    console.error("[createBooking]", err);
+    console.error("[createBookingAction]", err);
     return { ok: false, error: "Failed to save booking" };
   }
+
+  if (newBookingId) {
+    redirect(`/bookings/${newBookingId}`);
+  }
+
+  return { ok: true };
 }
 
 export async function updateBookingAction(
@@ -100,6 +106,8 @@ export async function updateBookingAction(
     return { ok: false, error: "Fee must be greater than 0" };
   }
 
+  let updated = false;
+
   try {
     await db.booking.update({
       where: { id },
@@ -115,29 +123,38 @@ export async function updateBookingAction(
         notes: notes || null,
       },
     });
-
+    updated = true;
     revalidatePath(`/bookings/${id}`);
     revalidatePath("/bookings");
     revalidatePath("/");
-    redirect(`/bookings/${id}`);
   } catch (err) {
-    console.error("[updateBooking]", err);
+    console.error("[updateBookingAction]", err);
     return { ok: false, error: "Failed to update booking" };
   }
+
+  if (updated) {
+    redirect(`/bookings/${id}`);
+  }
+
+  return { ok: true };
 }
 
 export async function deleteBookingAction(id: string): Promise<ActionResult> {
+  let deleted = false;
   try {
-    // Delete linked transactions first (SQLite doesn't cascade by default)
     await db.transaction.deleteMany({ where: { bookingId: id } });
     await db.booking.delete({ where: { id } });
-
+    deleted = true;
     revalidatePath("/bookings");
     revalidatePath("/");
   } catch (err) {
-    console.error("[deleteBooking]", err);
+    console.error("[deleteBookingAction]", err);
     return { ok: false, error: "Failed to delete booking" };
   }
 
-  redirect("/bookings");
+  if (deleted) {
+    redirect("/bookings");
+  }
+
+  return { ok: true };
 }

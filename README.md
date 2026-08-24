@@ -21,9 +21,9 @@ A streamlined, high-performance web platform built for independent photographers
    ```
 
 2. **Configure Environment Variables**:
-   Ensure `.env` contains:
+   Create a `.env` file from `.env.example`:
    ```env
-   DATABASE_URL="postgresql://neondb_owner:npg_FYV9UraQ4eEp@ep-gentle-sun-axlotinh.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require"
+   DATABASE_URL="your-neon-postgres-connection-string"
    SESSION_SECRET="studioledger-secret-key-32-chars-long-dev"
    ```
 
@@ -51,7 +51,7 @@ A streamlined, high-performance web platform built for independent photographers
 1. Push this repository to your GitHub account.
 2. Import the repository in [Vercel](https://vercel.com).
 3. Add the following **Environment Variables** in Vercel settings:
-   - `DATABASE_URL`: `postgresql://neondb_owner:npg_FYV9UraQ4eEp@ep-gentle-sun-axlotinh.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require`
-   - `SESSION_SECRET`: `studioledger-secret-key-32-chars-long-dev` (or any 32-char secret)
+   - `DATABASE_URL`: *(Your private Neon PostgreSQL connection string)*
+   - `SESSION_SECRET`: `studioledger-secret-key-32-chars-long-dev`
    - `AUTH_PASSPHRASE`: `studio123`
 4. Click **Deploy**.

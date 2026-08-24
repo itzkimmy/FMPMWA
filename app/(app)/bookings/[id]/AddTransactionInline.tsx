@@ -32,7 +32,7 @@ export default function AddTransactionInline({ bookingId }: AddTransactionInline
           date: formData.get("date"),
         }),
       });
-      const data = await res.json() as { ok: boolean; error?: string };
+      const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {
         setOpen(false);
         router.refresh();
@@ -46,9 +46,9 @@ export default function AddTransactionInline({ bookingId }: AddTransactionInline
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 text-xs text-studio-text-muted hover:text-studio-amber transition-colors"
+        className="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-semibold transition-colors"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} className="w-3.5 h-3.5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
         Add transaction
@@ -59,13 +59,13 @@ export default function AddTransactionInline({ bookingId }: AddTransactionInline
   return (
     <form onSubmit={handleSubmit} className="space-y-3 animate-slide-up">
       {error && (
-        <p className="text-xs text-studio-clay">{error}</p>
+        <p className="text-xs text-rose-400 font-semibold">{error}</p>
       )}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <select
           name="type"
           defaultValue="INCOME"
-          className="bg-studio-bg border border-studio-border rounded-lg px-3 py-2 text-sm text-studio-text"
+          className="bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
         >
           <option value="INCOME">Income</option>
           <option value="EXPENSE">Expense</option>
@@ -74,13 +74,13 @@ export default function AddTransactionInline({ bookingId }: AddTransactionInline
           name="amountInput"
           required
           placeholder="Amount (RM)"
-          className="bg-studio-bg border border-studio-border rounded-lg px-3 py-2 text-sm text-studio-text font-mono"
+          className="bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
         />
         <input
           name="description"
           required
           placeholder="Description"
-          className="bg-studio-bg border border-studio-border rounded-lg px-3 py-2 text-sm text-studio-text sm:col-span-2"
+          className="bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white sm:col-span-2"
         />
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -89,11 +89,11 @@ export default function AddTransactionInline({ bookingId }: AddTransactionInline
           type="date"
           required
           defaultValue={new Date().toLocaleDateString("en-CA")}
-          className="bg-studio-bg border border-studio-border rounded-lg px-3 py-2 text-sm text-studio-text font-mono"
+          className="bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
         />
         <select
           name="category"
-          className="bg-studio-bg border border-studio-border rounded-lg px-3 py-2 text-sm text-studio-text"
+          className="bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
         >
           <option value="">Category (optional)</option>
           {TRANSACTION_CATEGORIES.map((c) => (
@@ -104,14 +104,14 @@ export default function AddTransactionInline({ bookingId }: AddTransactionInline
           <button
             type="submit"
             disabled={isPending}
-            className="flex-1 bg-studio-amber text-studio-bg text-xs font-semibold rounded-lg py-2 hover:bg-studio-amber-dim transition-colors disabled:opacity-50"
+            className="flex-1 btn-primary text-xs font-bold rounded-lg py-2 disabled:opacity-50"
           >
-            {isPending ? "Saving…" : "Add"}
+            {isPending ? "Saving..." : "Add"}
           </button>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="px-3 py-2 bg-studio-panel border border-studio-border text-studio-text-muted text-xs rounded-lg hover:text-studio-text transition-all"
+            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition-colors"
           >
             Cancel
           </button>

@@ -1,29 +1,24 @@
 import type { BookingStatus, DeliveryStatus } from "@prisma/client";
 
-/**
- * Status pill component — pill-shaped, uppercase, letter-spaced.
- * Per SKILLS.md §Visual System.
- */
-
 const BOOKING_STATUS_CONFIG: Record<
   BookingStatus,
   { label: string; classes: string }
 > = {
   INQUIRY: {
     label: "Inquiry",
-    classes: "bg-studio-border text-studio-text-muted",
+    classes: "bg-slate-800 text-slate-200 border border-slate-700",
   },
   CONFIRMED: {
     label: "Confirmed",
-    classes: "bg-studio-sage-subtle text-studio-sage border border-studio-sage/20",
+    classes: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30",
   },
   COMPLETED: {
     label: "Completed",
-    classes: "bg-studio-sage-subtle/50 text-studio-sage-dim border border-studio-sage-dim/20",
+    classes: "bg-blue-500/15 text-blue-300 border border-blue-500/30",
   },
   CANCELLED: {
     label: "Cancelled",
-    classes: "bg-studio-border-subtle text-studio-text-faint",
+    classes: "bg-rose-500/15 text-rose-300 border border-rose-500/30",
   },
 };
 
@@ -33,19 +28,19 @@ const DELIVERY_STATUS_CONFIG: Record<
 > = {
   NOT_STARTED: {
     label: "Not started",
-    classes: "bg-studio-border text-studio-text-faint",
+    classes: "bg-slate-800 text-slate-300 border border-slate-700",
   },
   EDITING: {
     label: "Editing",
-    classes: "bg-studio-amber-subtle text-studio-amber border border-studio-amber/20",
+    classes: "bg-amber-500/15 text-amber-300 border border-amber-500/30",
   },
   READY: {
     label: "Ready",
-    classes: "bg-studio-amber-subtle/50 text-studio-amber-dim border border-studio-amber-dim/20",
+    classes: "bg-indigo-500/15 text-indigo-300 border border-indigo-500/30",
   },
   DELIVERED: {
     label: "Delivered",
-    classes: "bg-studio-sage-subtle text-studio-sage border border-studio-sage/20",
+    classes: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30",
   },
 };
 

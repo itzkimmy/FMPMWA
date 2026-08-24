@@ -17,12 +17,12 @@ export default async function NewBookingPage({ searchParams }: NewBookingPagePro
   });
 
   return (
-    <div className="max-w-2xl animate-fade-in">
+    <div className="max-w-2xl animate-fade-in pb-10">
       <div className="mb-6">
-        <h1 className="font-header text-xl font-semibold text-studio-text">
-          New booking
+        <h1 className="font-header text-xl font-bold text-white tracking-tight">
+          New Booking
         </h1>
-        <p className="text-sm text-studio-text-muted mt-0.5">
+        <p className="text-xs text-slate-400 mt-0.5">
           Add a new shoot to your schedule
         </p>
       </div>

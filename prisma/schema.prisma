@@ -1,4 +1,4 @@
-// StudioLedger Prisma Schema — Prisma 7.x format
+// FlowMotion Prisma Schema — Prisma 7.x format
 // SQLite for dev — portable to Postgres without rewrite.
 // See AGENTS.md §Code standards for money/date conventions.
 // Connection URL is managed via prisma.config.ts (Prisma 7 requirement).

@@ -1,5 +1,5 @@
 /**
- * Money utilities for StudioLedger.
+ * Money utilities for FlowMotion.
  * Amounts stored as integers (sen / cents), displayed with Ringgit Malaysia (RM).
  * Never do arithmetic on display strings — always work in cents.
  */

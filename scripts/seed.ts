@@ -2,7 +2,7 @@ import { db } from "../lib/db";
 import { manilaDateToUtc } from "../lib/dates";
 
 async function main() {
-  console.log("Seeding StudioLedger database...");
+  console.log("Seeding FlowMotion database...");
 
   // Clean existing records
   await db.transaction.deleteMany();

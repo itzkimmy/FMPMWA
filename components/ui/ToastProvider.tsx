@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { createContext, useContext, useState, useCallback } from "react";
 
@@ -40,28 +40,28 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-md text-xs font-medium animate-fade-in transition-all ${
+            className={`pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-lg bg-white text-xs font-medium animate-slide-up transition-all ${
               toast.type === "success"
-                ? "bg-studio-panel/95 border-studio-sage/40 text-studio-text shadow-studio-sage/5"
+                ? "border-emerald-200 text-slate-900"
                 : toast.type === "error"
-                ? "bg-studio-panel/95 border-studio-clay/40 text-studio-text shadow-studio-clay/5"
-                : "bg-studio-panel/95 border-studio-amber/40 text-studio-text shadow-studio-amber/5"
+                ? "border-rose-200 text-slate-900"
+                : "border-slate-200 text-slate-900"
             }`}
           >
             {toast.type === "success" ? (
-              <div className="w-5 h-5 rounded-full bg-studio-sage-subtle border border-studio-sage/30 flex items-center justify-center flex-shrink-0 text-studio-sage">
+              <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0 text-emerald-600">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3 h-3">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
               </div>
             ) : toast.type === "error" ? (
-              <div className="w-5 h-5 rounded-full bg-studio-clay-subtle border border-studio-clay/30 flex items-center justify-center flex-shrink-0 text-studio-clay">
+              <div className="w-5 h-5 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center flex-shrink-0 text-rose-600">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3 h-3">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
             ) : (
-              <div className="w-5 h-5 rounded-full bg-studio-amber-subtle border border-studio-amber/30 flex items-center justify-center flex-shrink-0 text-studio-amber">
+              <div className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 text-slate-700">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-3 h-3">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                 </svg>

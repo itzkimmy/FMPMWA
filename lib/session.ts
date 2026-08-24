@@ -1,12 +1,6 @@
-import { SignJWT, jwtVerify } from "jose";
+﻿import { SignJWT, jwtVerify } from "jose";
 
-/**
- * Session auth utilities.
- * Uses a signed JWT stored in an HTTP-only cookie.
- * No user accounts — single shared passphrase.
- */
-
-const SESSION_COOKIE = "studioledger_session";
+const SESSION_COOKIE = "flowmotion_session";
 const SESSION_DURATION = 60 * 60 * 24 * 30; // 30 days in seconds
 
 function getSecret(): Uint8Array {
@@ -17,7 +11,6 @@ function getSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-/** Create a signed session token (JWT) */
 export async function createSessionToken(): Promise<string> {
   return new SignJWT({ authenticated: true })
     .setProtectedHeader({ alg: "HS256" })
@@ -26,7 +19,6 @@ export async function createSessionToken(): Promise<string> {
     .sign(getSecret());
 }
 
-/** Verify a session token. Returns true if valid. */
 export async function verifySessionToken(token: string): Promise<boolean> {
   try {
     await jwtVerify(token, getSecret());
@@ -38,10 +30,6 @@ export async function verifySessionToken(token: string): Promise<boolean> {
 
 export { SESSION_COOKIE };
 
-/**
- * Server action: clear the session cookie and redirect to login.
- * Call from a server action in a form submission.
- */
 export async function logout() {
   const { cookies } = await import("next/headers");
   const { redirect } = await import("next/navigation");

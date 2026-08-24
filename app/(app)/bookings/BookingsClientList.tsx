@@ -53,10 +53,8 @@ export default function BookingsClientList({ initialBookings }: BookingsClientLi
   const filteredBookings = useMemo(() => {
     return initialBookings
       .filter((b) => {
-        // Status filter
         if (selectedStatus !== "ALL" && b.status !== selectedStatus) return false;
 
-        // Search query
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase().trim();
           const matchClient = b.client.name.toLowerCase().includes(q);
@@ -117,7 +115,7 @@ export default function BookingsClientList({ initialBookings }: BookingsClientLi
             fill="none"
             stroke="currentColor"
             strokeWidth={1.5}
-            className="w-4 h-4 text-studio-text-muted absolute left-3 top-1/2 -translate-y-1/2"
+            className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
           >
             <path
               strokeLinecap="round"
@@ -129,13 +127,13 @@ export default function BookingsClientList({ initialBookings }: BookingsClientLi
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by client, event type, location…"
-            className="w-full bg-studio-panel border border-studio-border rounded-lg pl-9 pr-8 py-2 text-xs text-studio-text placeholder:text-studio-text-faint focus:outline-none focus:border-studio-amber/50 transition-all"
+            placeholder="Search by client, event type, location..."
+            className="w-full bg-[#131C2E] border border-slate-700 rounded-lg pl-9 pr-8 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-studio-text-muted hover:text-studio-text p-1 text-xs"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 text-xs"
             >
               ✕
             </button>
@@ -144,11 +142,11 @@ export default function BookingsClientList({ initialBookings }: BookingsClientLi
 
         {/* Sort dropdown */}
         <div className="flex items-center gap-2">
-          <span className="text-2xs text-studio-text-muted font-medium whitespace-nowrap">Sort:</span>
+          <span className="text-2xs text-slate-400 font-medium whitespace-nowrap">Sort:</span>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="bg-studio-panel border border-studio-border rounded-lg px-2.5 py-1.5 text-xs text-studio-text focus:outline-none focus:border-studio-amber/50"
+            className="bg-[#131C2E] border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500"
           >
             <option value="date-desc">Date (Newest first)</option>
             <option value="date-asc">Date (Oldest first)</option>
@@ -160,25 +158,25 @@ export default function BookingsClientList({ initialBookings }: BookingsClientLi
       </div>
 
       {/* Filter tabs with live counters */}
-      <div className="flex gap-1.5 bg-studio-panel border border-studio-border rounded-lg p-1 overflow-x-auto">
+      <div className="flex gap-1 bg-[#0F172A] border border-slate-800 p-1 rounded-lg overflow-x-auto">
         {TABS.map((tab) => {
           const isActive = tab.value === selectedStatus;
           return (
             <button
               key={tab.value}
               onClick={() => setSelectedStatus(tab.value)}
-              className={`flex items-center gap-1.5 flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+              className={`flex items-center gap-1.5 flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 isActive
-                  ? "bg-studio-amber text-studio-bg shadow-sm"
-                  : "text-studio-text-muted hover:text-studio-text hover:bg-studio-panel-hover"
+                  ? "bg-amber-500 text-slate-950 shadow-sm"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/80"
               }`}
             >
               <span>{tab.label}</span>
               <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-semibold ${
+                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
                   isActive
-                    ? "bg-studio-bg/20 text-studio-bg"
-                    : "bg-studio-bg text-studio-text-muted"
+                    ? "bg-slate-950/20 text-slate-950"
+                    : "bg-slate-800 text-slate-300"
                 }`}
               >
                 {tab.count}
@@ -204,21 +202,21 @@ export default function BookingsClientList({ initialBookings }: BookingsClientLi
           }
         />
       ) : (
-        <div className="bg-studio-panel border border-studio-border rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-[#131C2E] border border-slate-800 rounded-xl overflow-hidden shadow-md">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-studio-border bg-studio-bg/30">
-                  <th className="px-5 py-3 text-left text-2xs font-semibold text-studio-text-muted uppercase tracking-wider">Date</th>
-                  <th className="px-5 py-3 text-left text-2xs font-semibold text-studio-text-muted uppercase tracking-wider">Client & Shoot</th>
-                  <th className="px-5 py-3 text-left text-2xs font-semibold text-studio-text-muted uppercase tracking-wider hidden sm:table-cell">Location</th>
-                  <th className="px-5 py-3 text-left text-2xs font-semibold text-studio-text-muted uppercase tracking-wider">Status</th>
-                  <th className="px-5 py-3 text-left text-2xs font-semibold text-studio-text-muted uppercase tracking-wider hidden md:table-cell">Delivery</th>
-                  <th className="px-5 py-3 text-right text-2xs font-semibold text-studio-text-muted uppercase tracking-wider">Fee / Paid</th>
-                  <th className="px-4 py-3 text-right text-2xs font-semibold text-studio-text-muted uppercase tracking-wider">Action</th>
+                <tr className="border-b border-slate-800 bg-[#0F172A]/75">
+                  <th className="px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider">Date</th>
+                  <th className="px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider">Client & Shoot</th>
+                  <th className="px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider hidden sm:table-cell">Location</th>
+                  <th className="px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider hidden md:table-cell">Delivery</th>
+                  <th className="px-5 py-3 text-right text-2xs font-semibold text-slate-300 uppercase tracking-wider">Fee / Paid</th>
+                  <th className="px-4 py-3 text-right text-2xs font-semibold text-slate-300 uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-studio-border">
+              <tbody className="divide-y divide-slate-800">
                 {filteredBookings.map((booking) => {
                   const isPaid = booking.paidCents >= booking.feeCents;
                   const isCopied = copiedId === booking.id;
@@ -226,27 +224,27 @@ export default function BookingsClientList({ initialBookings }: BookingsClientLi
                   return (
                     <tr
                       key={booking.id}
-                      className="hover:bg-studio-panel-hover transition-colors group"
+                      className="hover:bg-[#182338] transition-colors group"
                     >
                       <td className="px-5 py-3.5">
                         <Link href={`/bookings/${booking.id}`} className="block">
-                          <span className="font-mono text-sm text-studio-text group-hover:text-studio-amber transition-colors">
+                          <span className="font-mono text-xs text-slate-300 group-hover:text-amber-400 transition-colors">
                             {formatDate(new Date(booking.eventDate))}
                           </span>
                         </Link>
                       </td>
                       <td className="px-5 py-3.5">
                         <Link href={`/bookings/${booking.id}`} className="block">
-                          <span className="text-sm font-medium text-studio-text block group-hover:text-studio-amber transition-colors">
+                          <span className="text-xs font-semibold text-white block group-hover:text-amber-400 transition-colors">
                             {booking.client.name}
                           </span>
-                          <span className="text-xs text-studio-text-muted">
+                          <span className="text-2xs text-slate-400">
                             {booking.eventType}
                           </span>
                         </Link>
                       </td>
                       <td className="px-5 py-3.5 hidden sm:table-cell">
-                        <span className="text-xs text-studio-text-muted line-clamp-1">
+                        <span className="text-xs text-slate-400 line-clamp-1">
                           {booking.location || "—"}
                         </span>
                       </td>
@@ -257,10 +255,10 @@ export default function BookingsClientList({ initialBookings }: BookingsClientLi
                         <DeliveryStatusPill status={booking.deliveryStatus} />
                       </td>
                       <td className="px-5 py-3.5 text-right">
-                        <span className="font-mono text-sm text-studio-text block">
+                        <span className="font-mono text-xs font-bold text-white block">
                           {formatMoneyCompact(booking.feeCents)}
                         </span>
-                        <span className={`font-mono text-xs ${isPaid ? "text-studio-sage" : "text-studio-clay"}`}>
+                        <span className={`font-mono text-2xs font-semibold ${isPaid ? "text-emerald-400" : "text-rose-400"}`}>
                           {formatMoney(booking.paidCents)} paid
                         </span>
                       </td>
@@ -268,14 +266,14 @@ export default function BookingsClientList({ initialBookings }: BookingsClientLi
                         <button
                           onClick={(e) => handleCopySummary(e, booking)}
                           title="Copy summary to clipboard"
-                          className="p-1.5 rounded-lg border border-studio-border bg-studio-bg text-studio-text-muted hover:text-studio-amber hover:border-studio-amber/40 transition-all text-xs inline-flex items-center gap-1 opacity-80 group-hover:opacity-100"
+                          className="p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-all text-xs inline-flex items-center gap-1 shadow-sm"
                         >
                           {isCopied ? (
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5 text-studio-sage">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5 text-emerald-400">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
                           ) : (
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-3.5 h-3.5">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-3.5 h-3.5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
                             </svg>
                           )}

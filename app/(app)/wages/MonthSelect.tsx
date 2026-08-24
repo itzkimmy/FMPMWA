@@ -16,7 +16,7 @@ export default function MonthSelect({ currentMonth, months }: MonthSelectProps) 
       onChange={(e) => {
         router.push(`/wages?month=${e.target.value}`);
       }}
-      className="bg-studio-panel border border-studio-border rounded-lg px-3 py-2 text-sm text-studio-text focus:border-studio-amber focus:ring-1 focus:ring-studio-amber transition-colors"
+      className="bg-[#131C2E] border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold text-white focus:border-amber-500 transition-colors shadow-sm cursor-pointer"
     >
       {months.map((m) => (
         <option key={m.value} value={m.value}>

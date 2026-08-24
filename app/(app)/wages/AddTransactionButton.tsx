@@ -21,7 +21,7 @@ export default function AddTransactionButton() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(Object.fromEntries(formData.entries())),
       });
-      const data = await res.json() as { ok: boolean; error?: string };
+      const data = (await res.json()) as { ok: boolean; error?: string };
       if (data.ok) {
         setOpen(false);
         router.refresh();
@@ -35,9 +35,9 @@ export default function AddTransactionButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 bg-studio-amber text-studio-bg text-sm font-semibold rounded-lg hover:bg-studio-amber-dim transition-colors"
+        className="btn-primary flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-lg shadow-sm"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} className="w-3.5 h-3.5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
         Add transaction
@@ -45,50 +45,66 @@ export default function AddTransactionButton() {
 
       {open && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 max-w-lg mx-auto bg-studio-panel border border-studio-border rounded-xl shadow-panel-lg p-6 animate-slide-up">
-            <h3 className="font-header text-sm font-semibold text-studio-text mb-5">Add transaction</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && <p className="text-sm text-studio-clay">{error}</p>}
+          <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 max-w-md mx-auto bg-[#131C2E] border border-slate-700 rounded-xl shadow-2xl p-6 animate-slide-up">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+              <h3 className="font-header text-sm font-bold text-white">Add Transaction</h3>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="text-slate-400 hover:text-white text-sm"
+              >
+                ✕
+              </button>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-2.5 bg-rose-500/15 border border-rose-500/30 rounded-lg text-xs text-rose-300 font-medium">
+                  {error}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-studio-text-muted mb-1.5">Type</label>
-                  <select name="type" defaultValue="INCOME" className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text">
+                  <label className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Type</label>
+                  <select name="type" defaultValue="INCOME" className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
                     <option value="INCOME">Income</option>
                     <option value="EXPENSE">Expense</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-studio-text-muted mb-1.5">Amount (RM)</label>
-                  <input name="amountInput" required placeholder="0.00" className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text font-mono" />
+                  <label className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Amount (RM)</label>
+                  <input name="amountInput" required placeholder="0.00" className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs text-studio-text-muted mb-1.5">Description</label>
-                <input name="description" required className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text" />
+                <label className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Description</label>
+                <input name="description" required placeholder="e.g. Studio deposit, Film roll..." className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-studio-text-muted mb-1.5">Category</label>
-                  <select name="category" className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text">
+                  <label className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Category</label>
+                  <select name="category" className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
                     <option value="">None</option>
-                    {TRANSACTION_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    {TRANSACTION_CATEGORIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-studio-text-muted mb-1.5">Date</label>
-                  <input name="date" type="date" required defaultValue={new Date().toLocaleDateString("en-CA")} className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text font-mono" />
+                  <label className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Date</label>
+                  <input name="date" type="date" required defaultValue={new Date().toLocaleDateString("en-CA")} className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono" />
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={isPending} className="flex-1 bg-studio-amber text-studio-bg text-sm font-semibold py-2.5 rounded-lg hover:bg-studio-amber-dim transition-colors disabled:opacity-50">
-                  {isPending ? "Saving…" : "Add"}
+              <div className="flex gap-2.5 pt-2">
+                <button type="submit" disabled={isPending} className="flex-1 btn-primary text-xs font-bold py-2 rounded-lg disabled:opacity-50">
+                  {isPending ? "Saving..." : "Add Transaction"}
                 </button>
-                <button type="button" onClick={() => setOpen(false)} className="px-4 py-2.5 bg-studio-bg border border-studio-border text-studio-text-muted text-sm rounded-lg hover:text-studio-text transition-all">
+                <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition-colors">
                   Cancel
                 </button>
               </div>

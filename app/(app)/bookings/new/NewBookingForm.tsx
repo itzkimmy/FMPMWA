@@ -32,35 +32,34 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
       if (!result.ok) {
         setError(result.error);
       }
-      // On success, createBookingAction redirects
     });
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl pb-10">
       {error && (
-        <div className="px-4 py-3 bg-studio-clay-subtle border border-studio-clay/30 rounded-lg text-sm text-studio-clay animate-fade-in">
+        <div className="px-4 py-3 bg-rose-500/15 border border-rose-500/30 rounded-xl text-xs text-rose-300 animate-fade-in font-medium">
           {error}
         </div>
       )}
 
-      <div className="bg-studio-panel border border-studio-border rounded-xl p-6 space-y-5">
-        <h2 className="font-header text-sm font-semibold text-studio-text-muted uppercase tracking-wider">
-          Booking details
+      <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-6 space-y-5 shadow-md">
+        <h2 className="font-header text-2xs font-semibold text-slate-400 uppercase tracking-wider">
+          Booking Details
         </h2>
 
         {/* Client */}
         <div>
-          <label htmlFor="clientId" className="block text-xs font-medium text-studio-text-muted mb-1.5">
-            Client <span className="text-studio-clay">*</span>
+          <label htmlFor="clientId" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            Client <span className="text-rose-400">*</span>
           </label>
           <select
             id="clientId"
             name="clientId"
             required
-            className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text"
+            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
           >
-            <option value="">Select a client…</option>
+            <option value="">Select a client...</option>
             {clients.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -68,9 +67,9 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
             ))}
           </select>
           {clients.length === 0 && (
-            <p className="text-xs text-studio-clay mt-1">
+            <p className="text-xs text-rose-400 mt-1">
               No clients yet.{" "}
-              <Link href="/clients/new" className="underline">Add one first</Link>.
+              <Link href="/clients/new" className="underline font-semibold text-amber-400">Add one first</Link>.
             </p>
           )}
         </div>
@@ -78,8 +77,8 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
         {/* Event type + date */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="eventType" className="block text-xs font-medium text-studio-text-muted mb-1.5">
-              Event type <span className="text-studio-clay">*</span>
+            <label htmlFor="eventType" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              Event type <span className="text-rose-400">*</span>
             </label>
             <input
               id="eventType"
@@ -87,16 +86,16 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
               list="event-type-list"
               required
               defaultValue={prefilledData?.eventType ?? ""}
-              placeholder="Wedding, Portrait…"
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text"
+              placeholder="Wedding, Portrait, Studio..."
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
             />
             <datalist id="event-type-list">
               {EVENT_TYPES.map((t) => <option key={t} value={t} />)}
             </datalist>
           </div>
           <div>
-            <label htmlFor="eventDate" className="block text-xs font-medium text-studio-text-muted mb-1.5">
-              Event date <span className="text-studio-clay">*</span>
+            <label htmlFor="eventDate" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              Event date <span className="text-rose-400">*</span>
             </label>
             <input
               id="eventDate"
@@ -104,48 +103,48 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
               type="date"
               required
               defaultValue={prefilledData?.suggestedDate ?? ""}
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text font-mono"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
             />
           </div>
         </div>
 
         {/* Location */}
         <div>
-          <label htmlFor="location" className="block text-xs font-medium text-studio-text-muted mb-1.5">
+          <label htmlFor="location" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
             Location
           </label>
           <input
             id="location"
             name="location"
             defaultValue={prefilledData?.location ?? ""}
-            placeholder="Venue or city"
-            className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text"
+            placeholder="Venue, studio room, or city"
+            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
           />
         </div>
 
         {/* Fee + deposit */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="feeInput" className="block text-xs font-medium text-studio-text-muted mb-1.5">
-              Total fee (RM) <span className="text-studio-clay">*</span>
+            <label htmlFor="feeInput" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              Total fee (RM) <span className="text-rose-400">*</span>
             </label>
             <input
               id="feeInput"
               name="feeInput"
               required
               placeholder="0.00"
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text font-mono"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
             />
           </div>
           <div>
-            <label htmlFor="depositInput" className="block text-xs font-medium text-studio-text-muted mb-1.5">
+            <label htmlFor="depositInput" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Deposit required (RM)
             </label>
             <input
               id="depositInput"
               name="depositInput"
               placeholder="0.00"
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text font-mono"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
             />
           </div>
         </div>
@@ -153,14 +152,14 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
         {/* Status */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="status" className="block text-xs font-medium text-studio-text-muted mb-1.5">
+            <label htmlFor="status" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Booking status
             </label>
             <select
               id="status"
               name="status"
               defaultValue="INQUIRY"
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
             >
               {BOOKING_STATUS_VALUES.map((s) => (
                 <option key={s} value={s}>
@@ -170,14 +169,14 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
             </select>
           </div>
           <div>
-            <label htmlFor="deliveryStatus" className="block text-xs font-medium text-studio-text-muted mb-1.5">
+            <label htmlFor="deliveryStatus" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Delivery status
             </label>
             <select
               id="deliveryStatus"
               name="deliveryStatus"
               defaultValue="NOT_STARTED"
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
             >
               {DELIVERY_STATUS_VALUES.map((s) => (
                 <option key={s} value={s}>
@@ -190,15 +189,15 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
 
         {/* Notes */}
         <div>
-          <label htmlFor="notes" className="block text-xs font-medium text-studio-text-muted mb-1.5">
+          <label htmlFor="notes" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
             Notes
           </label>
           <textarea
             id="notes"
             name="notes"
             rows={4}
-            placeholder="Shot list, special requirements, client preferences…"
-            className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text resize-none"
+            placeholder="Shot list, special requirements, client preferences..."
+            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white resize-none"
           />
         </div>
       </div>
@@ -208,14 +207,14 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
         <button
           type="submit"
           disabled={isPending}
-          className="px-5 py-2.5 bg-studio-amber text-studio-bg text-sm font-semibold rounded-lg hover:bg-studio-amber-dim transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-primary px-4 py-2 text-xs font-bold rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isPending ? "Saving…" : "Create booking"}
+          {isPending ? "Saving..." : "Create booking"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-5 py-2.5 bg-studio-panel border border-studio-border text-studio-text-muted text-sm font-medium rounded-lg hover:text-studio-text hover:bg-studio-panel-hover transition-all"
+          className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition-colors"
         >
           Cancel
         </button>

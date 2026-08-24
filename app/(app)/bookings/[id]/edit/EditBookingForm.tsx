@@ -36,28 +36,28 @@ export default function EditBookingForm({ booking, clients }: EditBookingFormPro
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl pb-10">
       {error && (
-        <div className="px-4 py-3 bg-studio-clay-subtle border border-studio-clay/30 rounded-lg text-sm text-studio-clay">
+        <div className="px-4 py-3 bg-rose-500/15 border border-rose-500/30 rounded-xl text-xs text-rose-300 font-medium">
           {error}
         </div>
       )}
 
-      <div className="bg-studio-panel border border-studio-border rounded-xl p-6 space-y-5">
-        <h2 className="font-header text-xs font-semibold text-studio-text-muted uppercase tracking-wider">
-          Booking details
+      <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-6 space-y-5 shadow-md">
+        <h2 className="font-header text-2xs font-semibold text-slate-400 uppercase tracking-wider">
+          Booking Details
         </h2>
 
         <div>
-          <label htmlFor="clientId" className="block text-xs font-medium text-studio-text-muted mb-1.5">
-            Client <span className="text-studio-clay">*</span>
+          <label htmlFor="clientId" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            Client <span className="text-rose-400">*</span>
           </label>
           <select
             id="clientId"
             name="clientId"
             required
             defaultValue={booking.clientId}
-            className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text"
+            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
           >
             {clients.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -67,8 +67,8 @@ export default function EditBookingForm({ booking, clients }: EditBookingFormPro
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="eventType" className="block text-xs font-medium text-studio-text-muted mb-1.5">
-              Event type <span className="text-studio-clay">*</span>
+            <label htmlFor="eventType" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              Event type <span className="text-rose-400">*</span>
             </label>
             <input
               id="eventType"
@@ -76,15 +76,15 @@ export default function EditBookingForm({ booking, clients }: EditBookingFormPro
               list="event-type-list"
               required
               defaultValue={booking.eventType}
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
             />
             <datalist id="event-type-list">
               {EVENT_TYPES.map((t) => <option key={t} value={t} />)}
             </datalist>
           </div>
           <div>
-            <label htmlFor="eventDate" className="block text-xs font-medium text-studio-text-muted mb-1.5">
-              Event date <span className="text-studio-clay">*</span>
+            <label htmlFor="eventDate" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              Event date <span className="text-rose-400">*</span>
             </label>
             <input
               id="eventDate"
@@ -92,53 +92,59 @@ export default function EditBookingForm({ booking, clients }: EditBookingFormPro
               type="date"
               required
               defaultValue={eventDateStr}
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text font-mono"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="location" className="block text-xs font-medium text-studio-text-muted mb-1.5">Location</label>
+          <label htmlFor="location" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            Location
+          </label>
           <input
             id="location"
             name="location"
             defaultValue={booking.location ?? ""}
-            className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text"
+            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="feeInput" className="block text-xs font-medium text-studio-text-muted mb-1.5">
-              Total fee (RM) <span className="text-studio-clay">*</span>
+            <label htmlFor="feeInput" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              Total fee (RM) <span className="text-rose-400">*</span>
             </label>
             <input
               id="feeInput"
               name="feeInput"
               required
               defaultValue={feeDisplay}
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text font-mono"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
             />
           </div>
           <div>
-            <label htmlFor="depositInput" className="block text-xs font-medium text-studio-text-muted mb-1.5">Deposit (RM)</label>
+            <label htmlFor="depositInput" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              Deposit (RM)
+            </label>
             <input
               id="depositInput"
               name="depositInput"
               defaultValue={depositDisplay}
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text font-mono"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="status" className="block text-xs font-medium text-studio-text-muted mb-1.5">Booking status</label>
+            <label htmlFor="status" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              Booking status
+            </label>
             <select
               id="status"
               name="status"
               defaultValue={booking.status}
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
             >
               {BOOKING_STATUS_VALUES.map((s) => (
                 <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>
@@ -146,12 +152,14 @@ export default function EditBookingForm({ booking, clients }: EditBookingFormPro
             </select>
           </div>
           <div>
-            <label htmlFor="deliveryStatus" className="block text-xs font-medium text-studio-text-muted mb-1.5">Delivery status</label>
+            <label htmlFor="deliveryStatus" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              Delivery status
+            </label>
             <select
               id="deliveryStatus"
               name="deliveryStatus"
               defaultValue={booking.deliveryStatus}
-              className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
             >
               {DELIVERY_STATUS_VALUES.map((s) => (
                 <option key={s} value={s}>{s.replace(/_/g, " ").charAt(0) + s.replace(/_/g, " ").slice(1).toLowerCase()}</option>
@@ -161,13 +169,15 @@ export default function EditBookingForm({ booking, clients }: EditBookingFormPro
         </div>
 
         <div>
-          <label htmlFor="notes" className="block text-xs font-medium text-studio-text-muted mb-1.5">Notes</label>
+          <label htmlFor="notes" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            Notes
+          </label>
           <textarea
             id="notes"
             name="notes"
             rows={4}
             defaultValue={booking.notes ?? ""}
-            className="w-full bg-studio-bg border border-studio-border rounded-lg px-3 py-2.5 text-sm text-studio-text resize-none"
+            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white resize-none"
           />
         </div>
       </div>
@@ -176,14 +186,14 @@ export default function EditBookingForm({ booking, clients }: EditBookingFormPro
         <button
           type="submit"
           disabled={isPending}
-          className="px-5 py-2.5 bg-studio-amber text-studio-bg text-sm font-semibold rounded-lg hover:bg-studio-amber-dim transition-colors disabled:opacity-50"
+          className="btn-primary px-4 py-2 text-xs font-bold rounded-lg shadow-sm disabled:opacity-50"
         >
-          {isPending ? "Saving…" : "Save changes"}
+          {isPending ? "Saving..." : "Save changes"}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-5 py-2.5 bg-studio-panel border border-studio-border text-studio-text-muted text-sm font-medium rounded-lg hover:text-studio-text hover:bg-studio-panel-hover transition-all"
+          className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition-colors"
         >
           Cancel
         </button>

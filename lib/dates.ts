@@ -1,5 +1,5 @@
 /**
- * Date utilities for StudioLedger.
+ * Date utilities for FlowMotion.
  * Per AGENTS.md: store UTC, display in Asia/Manila.
  * Never do date math on formatted strings.
  */

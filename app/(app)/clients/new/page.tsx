@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import ClientForm from "../ClientForm";
 
 export default async function NewClientPage() {

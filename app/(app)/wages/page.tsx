@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { db } from "@/lib/db";
 import { formatMoney, formatMoneyCompact } from "@/lib/money";
 import { formatDate, getMonthRange } from "@/lib/dates";
@@ -216,7 +218,7 @@ export default async function WagesPage({ searchParams }: WagesPageProps) {
                           {tx.category}
                         </span>
                       ) : (
-                        <span className="text-2xs text-slate-500">—</span>
+                        <span className="text-2xs text-slate-500">â€”</span>
                       )}
                     </td>
                     <td className="px-5 py-3.5 hidden md:table-cell">
@@ -229,12 +231,12 @@ export default async function WagesPage({ searchParams }: WagesPageProps) {
                           <span className="text-slate-400">({tx.booking.eventType})</span>
                         </Link>
                       ) : (
-                        <span className="text-xs text-slate-500">—</span>
+                        <span className="text-xs text-slate-500">â€”</span>
                       )}
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <span className={`font-mono text-xs font-bold ${tx.type === "INCOME" ? "text-emerald-400" : "text-rose-400"}`}>
-                        {tx.type === "INCOME" ? "+" : "−"}{formatMoney(tx.amountCents)}
+                        {tx.type === "INCOME" ? "+" : "âˆ’"}{formatMoney(tx.amountCents)}
                       </span>
                     </td>
                   </tr>

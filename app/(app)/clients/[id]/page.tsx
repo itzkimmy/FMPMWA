@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -53,7 +55,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-4 shadow-md">
           <p className="text-2xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Bookings</p>
@@ -69,7 +70,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </div>
       </div>
 
-      {/* Notes */}
       {client.notes && (
         <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-5 shadow-md">
           <p className="text-2xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Client Notes</p>
@@ -77,7 +77,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         </div>
       )}
 
-      {/* Booking history */}
       <div className="bg-[#131C2E] border border-slate-800 rounded-xl shadow-md overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75">
           <h2 className="font-header text-sm font-semibold text-white">Booking History</h2>

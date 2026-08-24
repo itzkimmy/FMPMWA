@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { db } from "@/lib/db";
 import SettingsForm from "./SettingsForm";
 import { logout } from "@/lib/session";

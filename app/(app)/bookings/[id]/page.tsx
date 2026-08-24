@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -37,7 +39,6 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
 
   return (
     <div className="max-w-4xl space-y-6 animate-fade-in pb-10">
-      {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -66,7 +67,6 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
         </div>
       </div>
 
-      {/* Status + financials */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-4 shadow-md">
           <p className="text-2xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Booking Status</p>
@@ -87,7 +87,6 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
         </div>
       </div>
 
-      {/* Details */}
       <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-5 shadow-md">
         <h2 className="font-header text-2xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
           Shoot Details
@@ -126,7 +125,6 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
         </dl>
       </div>
 
-      {/* Transactions */}
       <div className="bg-[#131C2E] border border-slate-800 rounded-xl shadow-md overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75">
           <h2 className="font-header text-sm font-semibold text-white">Transactions</h2>
@@ -162,7 +160,6 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
           </ul>
         )}
 
-        {/* Inline add transaction */}
         <div className="border-t border-slate-800 px-5 py-4 bg-[#0F172A]/30">
           <AddTransactionInline bookingId={id} />
         </div>

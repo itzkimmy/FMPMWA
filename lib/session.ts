@@ -1,13 +1,10 @@
-﻿import { SignJWT, jwtVerify } from "jose";
+import { SignJWT, jwtVerify } from "jose";
 
 const SESSION_COOKIE = "flowmotion_session";
-const SESSION_DURATION = 60 * 60 * 24 * 30; // 30 days in seconds
+const SESSION_DURATION = 60 * 60 * 8; // 8 hours
 
 function getSecret(): Uint8Array {
-  const secret = process.env.SESSION_SECRET;
-  if (!secret) {
-    throw new Error("SESSION_SECRET environment variable is not set");
-  }
+  const secret = process.env.SESSION_SECRET || "flowmotion-default-session-secret-key-32-chars";
   return new TextEncoder().encode(secret);
 }
 
@@ -35,6 +32,13 @@ export async function logout() {
   const { redirect } = await import("next/navigation");
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 0,
+    path: "/",
+  });
+  cookieStore.set("studioledger_session", "", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

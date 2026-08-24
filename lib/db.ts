@@ -1,19 +1,20 @@
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import "dotenv/config";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
-
-/**
- * Prisma client singleton for use in server-side code.
- * Uses globalThis to prevent multiple instances in dev (hot-reload safe).
- * Uses LibSQL driver adapter for SQLite (Prisma 7 requirement).
- */
+import pg from "pg";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
 function createPrismaClient(): PrismaClient {
-  const url = process.env.DATABASE_URL || "file:./prisma/dev.db";
-  const adapter = new PrismaLibSql({ url });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL environment variable is not defined.");
+  }
+
+  const pool = new pg.Pool({ connectionString });
+  const adapter = new PrismaPg(pool);
 
   return new PrismaClient({
     adapter,
@@ -26,4 +27,3 @@ export const db = globalForPrisma.prisma ?? createPrismaClient();
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = db;
 }
-

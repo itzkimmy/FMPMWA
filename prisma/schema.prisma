@@ -1,14 +1,14 @@
-// FlowMotion Prisma Schema — Prisma 7.x format
-// SQLite for dev — portable to Postgres without rewrite.
-// See AGENTS.md §Code standards for money/date conventions.
-// Connection URL is managed via prisma.config.ts (Prisma 7 requirement).
+// FlowMotion Prisma Schema
+// PostgreSQL datasource for Neon / Cloud Postgres production & dev.
+// See AGENTS.md for money/date conventions.
+// Connection URL is managed via prisma.config.ts / .env
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Client {
@@ -28,7 +28,7 @@ model Booking {
   eventType      String // "Wedding", "Portrait", "Product", "Debut", etc.
   eventDate      DateTime
   location       String?
-  feeCents       Int // total agreed fee, in centavos — never a float
+  feeCents       Int // total agreed fee, in cents
   depositCents   Int            @default(0)
   status         BookingStatus  @default(INQUIRY)
   deliveryStatus DeliveryStatus @default(NOT_STARTED)
@@ -56,7 +56,7 @@ model Transaction {
   bookingId   String?
   booking     Booking?        @relation(fields: [bookingId], references: [id])
   type        TransactionType
-  amountCents Int // always positive — type field determines income vs expense
+  amountCents Int // always positive
   category    String? // "Gear", "Travel", "Software", "Booking payment"
   description String
   date        DateTime        @default(now())

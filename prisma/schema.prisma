@@ -1,0 +1,74 @@
+// StudioLedger Prisma Schema — Prisma 7.x format
+// SQLite for dev — portable to Postgres without rewrite.
+// See AGENTS.md §Code standards for money/date conventions.
+// Connection URL is managed via prisma.config.ts (Prisma 7 requirement).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Client {
+  id        String    @id @default(cuid())
+  name      String
+  contact   String?
+  source    String? // "Instagram", "Referral", "Repeat client", etc.
+  notes     String?
+  createdAt DateTime  @default(now())
+  bookings  Booking[]
+}
+
+model Booking {
+  id             String         @id @default(cuid())
+  clientId       String
+  client         Client         @relation(fields: [clientId], references: [id])
+  eventType      String // "Wedding", "Portrait", "Product", "Debut", etc.
+  eventDate      DateTime
+  location       String?
+  feeCents       Int // total agreed fee, in centavos — never a float
+  depositCents   Int            @default(0)
+  status         BookingStatus  @default(INQUIRY)
+  deliveryStatus DeliveryStatus @default(NOT_STARTED)
+  notes          String?
+  createdAt      DateTime       @default(now())
+  transactions   Transaction[]
+}
+
+enum BookingStatus {
+  INQUIRY
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  NOT_STARTED
+  EDITING
+  READY
+  DELIVERED
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  bookingId   String?
+  booking     Booking?        @relation(fields: [bookingId], references: [id])
+  type        TransactionType
+  amountCents Int // always positive — type field determines income vs expense
+  category    String? // "Gear", "Travel", "Software", "Booking payment"
+  description String
+  date        DateTime        @default(now())
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+// Key-value store for user settings (rate card, preferences, etc.)
+model Settings {
+  key   String @id
+  value String
+}

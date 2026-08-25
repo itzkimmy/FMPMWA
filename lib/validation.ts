@@ -1,22 +1,41 @@
 import { z } from "zod";
+import { sanitizeString } from "./sanitize";
 
 /**
- * Zod validation schemas — shared between client and server.
- * Per AGENTS.md: no duplicated validation logic.
+ * Zod validation schemas with automatic sanitization.
  */
 
-// ─── Client ────────────────────────────────────────────────────────────────
+// ─── Client Schema ─────────────────────────────────────────────────────────
 
 export const clientSchema = z.object({
-  name: z.string().min(1, "Name is required").max(200),
-  contact: z.string().max(500).optional().or(z.literal("")),
-  source: z.string().max(200).optional().or(z.literal("")),
-  notes: z.string().max(5000).optional().or(z.literal("")),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(200)
+    .transform((val) => sanitizeString(val)),
+  contact: z
+    .string()
+    .max(500)
+    .optional()
+    .or(z.literal(""))
+    .transform((val) => sanitizeString(val)),
+  source: z
+    .string()
+    .max(200)
+    .optional()
+    .or(z.literal(""))
+    .transform((val) => sanitizeString(val)),
+  notes: z
+    .string()
+    .max(5000)
+    .optional()
+    .or(z.literal(""))
+    .transform((val) => sanitizeString(val)),
 });
 
 export type ClientFormData = z.infer<typeof clientSchema>;
 
-// ─── Booking ───────────────────────────────────────────────────────────────
+// ─── Booking Schema ────────────────────────────────────────────────────────
 
 export const BOOKING_STATUS_VALUES = [
   "INQUIRY",
@@ -47,26 +66,39 @@ export const EVENT_TYPES = [
 
 export const bookingSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
-  eventType: z.string().min(1, "Event type is required").max(100),
-  eventDate: z.string().min(1, "Event date is required"), // YYYY-MM-DD from form input
-  location: z.string().max(500).optional().or(z.literal("")),
-  // feeCents: accept as string from form, parse to int
+  eventType: z
+    .string()
+    .min(1, "Event type is required")
+    .max(100)
+    .transform((val) => sanitizeString(val)),
+  eventDate: z.string().min(1, "Event date is required"), // YYYY-MM-DD
+  location: z
+    .string()
+    .max(500)
+    .optional()
+    .or(z.literal(""))
+    .transform((val) => sanitizeString(val)),
   feeInput: z
     .string()
     .min(1, "Fee is required")
     .refine((v) => {
       const n = parseFloat(v.replace(/(?:RM|rm|MYR|myr|₱|\$|[,\s])/g, ""));
-      return !isNaN(n) && n >= 0;
+      return !isNaN(n) && n >= 0 && n <= 10000000;
     }, "Enter a valid fee amount"),
   depositInput: z.string().optional().or(z.literal("")),
   status: z.enum(BOOKING_STATUS_VALUES).default("INQUIRY"),
   deliveryStatus: z.enum(DELIVERY_STATUS_VALUES).default("NOT_STARTED"),
-  notes: z.string().max(10000).optional().or(z.literal("")),
+  notes: z
+    .string()
+    .max(10000)
+    .optional()
+    .or(z.literal(""))
+    .transform((val) => sanitizeString(val)),
 });
 
 export type BookingFormData = z.infer<typeof bookingSchema>;
 
-// ─── Transaction ───────────────────────────────────────────────────────────
+// ─── Transaction Schema ────────────────────────────────────────────────────
 
 export const TRANSACTION_CATEGORIES = [
   "Booking payment",
@@ -90,35 +122,48 @@ export const transactionSchema = z.object({
     .min(1, "Amount is required")
     .refine((v) => {
       const n = parseFloat(v.replace(/(?:RM|rm|MYR|myr|₱|\$|[,\s])/g, ""));
-      return !isNaN(n) && n > 0;
+      return !isNaN(n) && n > 0 && n <= 10000000;
     }, "Enter a valid amount greater than 0"),
-  category: z.string().max(100).optional().or(z.literal("")),
-  description: z.string().min(1, "Description is required").max(500),
+  category: z
+    .string()
+    .max(100)
+    .optional()
+    .or(z.literal(""))
+    .transform((val) => sanitizeString(val)),
+  description: z
+    .string()
+    .min(1, "Description is required")
+    .max(500)
+    .transform((val) => sanitizeString(val)),
   date: z.string().min(1, "Date is required"), // YYYY-MM-DD
 });
 
 export type TransactionFormData = z.infer<typeof transactionSchema>;
 
-// ─── Settings / Rate Card ──────────────────────────────────────────────────
+// ─── Rate Card Schema ──────────────────────────────────────────────────────
 
 export const rateCardSchema = z.object({
-  photographyHalfDay: z.number().int().min(0).optional(), // cents
-  photographyFullDay: z.number().int().min(0).optional(),
-  videographyHalfDay: z.number().int().min(0).optional(),
-  videographyFullDay: z.number().int().min(0).optional(),
-  portraitSession: z.number().int().min(0).optional(),
-  additionalHour: z.number().int().min(0).optional(),
-  rushFee: z.number().int().min(0).optional(),
-  extraEdits: z.number().int().min(0).optional(),
-  notes: z.string().max(2000).optional(),
+  photographyHalfDay: z.number().int().min(0).max(100000000).optional(),
+  photographyFullDay: z.number().int().min(0).max(100000000).optional(),
+  videographyHalfDay: z.number().int().min(0).max(100000000).optional(),
+  videographyFullDay: z.number().int().min(0).max(100000000).optional(),
+  portraitSession: z.number().int().min(0).max(100000000).optional(),
+  additionalHour: z.number().int().min(0).max(100000000).optional(),
+  rushFee: z.number().int().min(0).max(100000000).optional(),
+  extraEdits: z.number().int().min(0).max(100000000).optional(),
+  notes: z
+    .string()
+    .max(2000)
+    .optional()
+    .transform((val) => (val ? sanitizeString(val) : val)),
 });
 
 export type RateCard = z.infer<typeof rateCardSchema>;
 
-// ─── Auth ──────────────────────────────────────────────────────────────────
+// ─── Login Schema ──────────────────────────────────────────────────────────
 
 export const loginSchema = z.object({
-  passphrase: z.string().min(1, "Passphrase is required"),
+  passphrase: z.string().min(1, "Passphrase is required").max(100),
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;

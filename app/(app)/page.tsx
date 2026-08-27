@@ -2,10 +2,10 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { formatMoneyCompact, formatMoney } from "@/lib/money";
-import { formatDate, getCurrentMonthRange, todayManilaAsUtc } from "@/lib/dates";
+import { formatMoneyCompact } from "@/lib/money";
+import { getCurrentMonthRange, todayManilaAsUtc } from "@/lib/dates";
 import { BookingStatusPill, DeliveryStatusPill } from "@/components/ui/StatusPill";
-import MiniCalendar from "@/components/dashboard/MiniCalendar";
+import MiniCalendar, { type CalendarBookingItem } from "@/components/dashboard/MiniCalendar";
 
 export default async function DashboardPage() {
   const { start: monthStart, end: monthEnd } = getCurrentMonthRange();
@@ -41,10 +41,17 @@ export default async function DashboardPage() {
       _sum: { amountCents: true },
       where: { type: "EXPENSE", date: { gte: monthStart, lte: monthEnd } },
     }),
-    // Mini-calendar data: all bookings this month
+    // Mini-calendar data: all non-cancelled bookings this month with client & transactions
     db.booking.findMany({
-      where: { eventDate: { gte: monthStart, lte: monthEnd } },
-      select: { eventDate: true, status: true },
+      where: {
+        eventDate: { gte: monthStart, lte: monthEnd },
+        status: { not: "CANCELLED" },
+      },
+      include: {
+        client: true,
+        transactions: { where: { type: "INCOME" } },
+      },
+      orderBy: { eventDate: "asc" },
     }),
   ]);
 
@@ -52,10 +59,17 @@ export default async function DashboardPage() {
   const expenseCents = monthExpenses._sum.amountCents ?? 0;
   const netCents = incomeCents - expenseCents;
 
-  // Calendar chips: which days have bookings
-  const bookedDays = calendarBookings.map((b) => ({
-    date: b.eventDate.toISOString(),
+  // Calendar booking items for interactive hover popup
+  const bookedDays: CalendarBookingItem[] = calendarBookings.map((b) => ({
+    id: b.id,
+    clientName: b.client.name,
+    eventType: b.eventType,
+    eventDate: b.eventDate.toISOString(),
+    location: b.location,
+    feeCents: b.feeCents,
+    paidCents: b.transactions.reduce((sum, t) => sum + t.amountCents, 0),
     status: b.status,
+    deliveryStatus: b.deliveryStatus,
   }));
 
   return (
@@ -129,9 +143,9 @@ export default async function DashboardPage() {
         />
       </section>
 
-      {/* Upcoming Shoots + Mini Calendar */}
+      {/* Upcoming Shoots + Mini Calendar with Hover Popup */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Upcoming Shoots — takes 2/3 width */}
+        {/* Upcoming Shoots (2/3 width) */}
         <section className="lg:col-span-2 bg-[#131C2E] rounded-xl border border-slate-800 shadow-md overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75">
             <div className="flex items-center gap-2">
@@ -210,9 +224,9 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        {/* Mini Calendar — takes 1/3 width */}
-        <section className="bg-[#131C2E] rounded-xl border border-slate-800 shadow-md overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75">
+        {/* Mini Calendar with Hover Details Popup (1/3 width) */}
+        <section className="bg-[#131C2E] rounded-xl border border-slate-800 shadow-md overflow-visible relative">
+          <div className="px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75 rounded-t-xl">
             <h2 className="font-header text-sm font-semibold text-white">This Month</h2>
           </div>
           <div className="p-4">

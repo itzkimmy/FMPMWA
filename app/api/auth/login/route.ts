@@ -6,7 +6,7 @@ import { checkRateLimit, clearRateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({ passphrase: z.string().min(1) });
 
-
+// Default bcrypt hash for fallback authentication (10-round bcrypt hash)
 const DEFAULT_HASH = "$2b$10$/fPTcJoBn/ZyjwaKj1z0NOOhHyl85hxn5Mg0rNZZeVPFnMNls0jWC";
 
 function getClientIp(request: NextRequest): string {
@@ -57,14 +57,13 @@ export async function POST(request: NextRequest) {
     // Check direct passphrase env if provided
     if (directPassphrase && passphrase === directPassphrase) {
       isValid = true;
-    } else if (passphrase === "flowmotion123") {
-      isValid = true;
     } else if (hash) {
+      // Securely compare against hashed passphrase
       isValid = await bcrypt.compare(passphrase, hash);
     }
 
     if (!isValid) {
-      // Artificial delay to prevent brute-force timing analysis
+      // Artificial delay to mitigate brute-force timing analysis
       await new Promise((r) => setTimeout(r, 500));
       return NextResponse.json(
         {
@@ -82,7 +81,7 @@ export async function POST(request: NextRequest) {
     const token = await createSessionToken();
     const response = NextResponse.json({ ok: true });
 
-    // Secure session cookie (no maxAge = destroyed when browser session ends)
+    // Secure session cookie (session cookie destroyed on browser close)
     response.cookies.set(SESSION_COOKIE, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

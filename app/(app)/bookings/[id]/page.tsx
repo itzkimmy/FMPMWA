@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { formatMoney, formatMoneyCompact } from "@/lib/money";
-import { formatDate, formatDateTime } from "@/lib/dates";
+import { formatDate } from "@/lib/dates";
 import { BookingStatusPill, DeliveryStatusPill } from "@/components/ui/StatusPill";
 import DeleteBookingButton from "./DeleteBookingButton";
 import AddTransactionInline from "./AddTransactionInline";
@@ -26,144 +26,135 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
 
   if (!booking) notFound();
 
-  const incomeCents = booking.transactions
+  const paidCents = booking.transactions
     .filter((t) => t.type === "INCOME")
     .reduce((sum, t) => sum + t.amountCents, 0);
-
-  const expensesCents = booking.transactions
-    .filter((t) => t.type === "EXPENSE")
-    .reduce((sum, t) => sum + t.amountCents, 0);
-
-  const balanceCents = booking.feeCents - incomeCents;
-  const isPaid = incomeCents >= booking.feeCents;
+  const balanceCents = booking.feeCents - paidCents;
+  const paymentPercent = booking.feeCents > 0 ? Math.min(100, Math.round((paidCents / booking.feeCents) * 100)) : 0;
 
   return (
-    <div className="max-w-4xl space-y-6 animate-fade-in pb-10">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+    <div className="max-w-3xl space-y-6 animate-fade-in pb-10">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Link href="/bookings" className="text-slate-400 hover:text-white text-xs transition-colors font-medium">
-              Bookings
-            </Link>
-            <span className="text-slate-600">/</span>
-            <span className="text-xs text-slate-300 font-medium">{booking.client.name}</span>
-          </div>
+          <Link href="/bookings" className="text-xs text-slate-400 hover:text-amber-400 font-medium transition-colors mb-1 inline-block">
+            ← Back to Bookings
+          </Link>
           <h1 className="font-header text-xl font-bold text-white">
-            {booking.eventType} — {booking.client.name}
+            {booking.client.name}
           </h1>
-          <p className="font-mono text-xs text-slate-400 mt-0.5">
-            {formatDate(new Date(booking.eventDate))}
-            {booking.location ? ` · ${booking.location}` : ""}
+          <p className="text-xs text-slate-400 mt-0.5">
+            {booking.eventType} · {formatDate(new Date(booking.eventDate))}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href={`/bookings/${id}/edit`}
-            className="px-3.5 py-1.5 bg-[#131C2E] border border-slate-700 text-slate-200 hover:text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-all shadow-sm"
+            className="btn-primary px-3 py-1.5 text-xs font-bold rounded-lg"
           >
             Edit
           </Link>
-          <DeleteBookingButton bookingId={id} />
+          <DeleteBookingButton id={id} />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-4 shadow-md">
-          <p className="text-2xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Booking Status</p>
-          <BookingStatusPill status={booking.status} />
+      {/* Status + Payment Overview */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-5 shadow-md space-y-3">
+          <h2 className="text-2xs font-semibold text-slate-400 uppercase tracking-wider">Status</h2>
+          <div className="flex items-center gap-2">
+            <BookingStatusPill status={booking.status} />
+            <DeliveryStatusPill status={booking.deliveryStatus} />
+          </div>
         </div>
-        <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-4 shadow-md">
-          <p className="text-2xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Delivery Status</p>
-          <DeliveryStatusPill status={booking.deliveryStatus} />
-        </div>
-        <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-4 shadow-md">
-          <p className="text-2xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Payment Status</p>
-          <p className={`font-mono text-lg font-bold ${isPaid ? "text-emerald-400" : "text-rose-400"}`}>
-            {isPaid ? "Paid in full" : `${formatMoney(balanceCents)} due`}
-          </p>
-          <p className="font-mono text-2xs text-slate-400 mt-0.5">
-            {formatMoney(incomeCents)} of {formatMoneyCompact(booking.feeCents)}
-          </p>
+
+        <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-5 shadow-md space-y-3">
+          <h2 className="text-2xs font-semibold text-slate-400 uppercase tracking-wider">Payment</h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-mono text-lg font-bold text-white">{formatMoneyCompact(paidCents)}</p>
+              <p className="text-2xs text-slate-400">of {formatMoney(booking.feeCents)}</p>
+            </div>
+            <div className={`font-mono text-sm font-bold ${balanceCents > 0 ? "text-rose-400" : "text-emerald-400"}`}>
+              {balanceCents > 0 ? `${formatMoneyCompact(balanceCents)} due` : "Paid ✓"}
+            </div>
+          </div>
+          {/* Progress bar */}
+          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${balanceCents <= 0 ? "bg-emerald-400" : "bg-amber-500"}`}
+              style={{ width: `${paymentPercent}%` }}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-5 shadow-md">
-        <h2 className="font-header text-2xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
-          Shoot Details
-        </h2>
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+      {/* Details Card */}
+      <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-5 shadow-md space-y-4">
+        <h2 className="text-2xs font-semibold text-slate-400 uppercase tracking-wider">Details</h2>
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
           <div>
-            <dt className="text-xs text-slate-400 font-medium">Client</dt>
-            <dd className="mt-0.5">
-              <Link href={`/clients/${booking.clientId}`} className="text-xs text-amber-400 font-semibold hover:underline">
-                {booking.client.name}
-              </Link>
+            <dt className="text-slate-400 font-medium">Client</dt>
+            <dd className="text-white font-semibold mt-0.5">{booking.client.name}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400 font-medium">Contact</dt>
+            <dd className="text-white font-semibold mt-0.5">{booking.client.contact || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400 font-medium">Event Type</dt>
+            <dd className="text-white font-semibold mt-0.5">{booking.eventType}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400 font-medium">Date</dt>
+            <dd className="text-white font-semibold mt-0.5">{formatDate(new Date(booking.eventDate))}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400 font-medium">Location</dt>
+            <dd className="text-white font-semibold mt-0.5">{booking.location || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400 font-medium">Deposit</dt>
+            <dd className="text-white font-semibold mt-0.5">{formatMoney(booking.depositCents)}</dd>
+          </div>
+        </dl>
+        {booking.notes && (
+          <div>
+            <dt className="text-slate-400 font-medium text-xs mb-1">Notes</dt>
+            <dd className="text-xs text-slate-300 bg-[#0F172A] border border-slate-700 rounded-lg p-3 whitespace-pre-wrap">
+              {booking.notes}
             </dd>
           </div>
-          <div>
-            <dt className="text-xs text-slate-400 font-medium">Total Fee</dt>
-            <dd className="font-mono text-xs font-bold text-white mt-0.5">{formatMoney(booking.feeCents)}</dd>
-          </div>
-          {booking.depositCents > 0 && (
-            <div>
-              <dt className="text-xs text-slate-400 font-medium">Deposit Required</dt>
-              <dd className="font-mono text-xs font-semibold text-white mt-0.5">{formatMoney(booking.depositCents)}</dd>
-            </div>
-          )}
-          <div>
-            <dt className="text-xs text-slate-400 font-medium">Created</dt>
-            <dd className="font-mono text-xs text-slate-400 mt-0.5">{formatDateTime(new Date(booking.createdAt))}</dd>
-          </div>
-          {booking.notes && (
-            <div className="sm:col-span-2">
-              <dt className="text-xs text-slate-400 font-medium mb-1">Notes</dt>
-              <dd className="text-xs text-slate-200 whitespace-pre-wrap bg-[#0F172A] border border-slate-800 rounded-lg p-3">
-                {booking.notes}
-              </dd>
-            </div>
-          )}
-        </dl>
+        )}
       </div>
 
-      <div className="bg-[#131C2E] border border-slate-800 rounded-xl shadow-md overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75">
-          <h2 className="font-header text-sm font-semibold text-white">Transactions</h2>
-          <div className="flex gap-4 text-xs font-mono">
-            <span className="text-emerald-400 font-bold">+{formatMoneyCompact(incomeCents)}</span>
-            {expensesCents > 0 && (
-              <span className="text-rose-400 font-bold">−{formatMoneyCompact(expensesCents)}</span>
-            )}
-          </div>
-        </div>
+      {/* Add Payment */}
+      <AddTransactionInline bookingId={id} clientName={booking.client.name} />
 
-        {booking.transactions.length === 0 ? (
-          <p className="px-5 py-6 text-xs text-slate-400 text-center">
-            No transactions linked to this booking yet
-          </p>
-        ) : (
+      {/* Transaction History */}
+      {booking.transactions.length > 0 && (
+        <div className="bg-[#131C2E] border border-slate-800 rounded-xl shadow-md overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75">
+            <h2 className="font-header text-sm font-semibold text-white">Transaction History</h2>
+          </div>
           <ul className="divide-y divide-slate-800">
             {booking.transactions.map((tx) => (
-              <li key={tx.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-[#182338] transition-colors">
-                <div className={`flex-shrink-0 w-2 h-2 rounded-full ${tx.type === "INCOME" ? "bg-emerald-400" : "bg-rose-400"}`} />
+              <li key={tx.id} className="flex items-center gap-4 px-5 py-3">
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${tx.type === "INCOME" ? "bg-emerald-400" : "bg-rose-400"}`} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-white">{tx.description}</p>
-                  <p className="text-2xs text-slate-400">
-                    {tx.category && `${tx.category} · `}
-                    {formatDate(new Date(tx.date))}
+                  <p className="text-xs font-semibold text-white truncate">{tx.description}</p>
+                  <p className="text-2xs text-slate-400 mt-0.5">
+                    {tx.category || "—"} · {formatDate(new Date(tx.date))}
                   </p>
                 </div>
                 <span className={`font-mono text-xs font-bold ${tx.type === "INCOME" ? "text-emerald-400" : "text-rose-400"}`}>
-                  {tx.type === "INCOME" ? "+" : "−"}{formatMoney(tx.amountCents)}
+                  {tx.type === "INCOME" ? "+" : "−"}{formatMoneyCompact(tx.amountCents)}
                 </span>
               </li>
             ))}
           </ul>
-        )}
-
-        <div className="border-t border-slate-800 px-5 py-4 bg-[#0F172A]/30">
-          <AddTransactionInline bookingId={id} />
         </div>
-      </div>
+      )}
     </div>
   );
 }

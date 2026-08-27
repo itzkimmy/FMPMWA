@@ -1,43 +1,45 @@
 "use client";
 
-import { useState, useTransition, FormEvent } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { TRANSACTION_CATEGORIES } from "@/lib/validation";
 
-interface AddTransactionInlineProps {
-  bookingId: string;
-}
-
-export default function AddTransactionInline({ bookingId }: AddTransactionInlineProps) {
-  const router = useRouter();
+export default function AddTransactionInline({ bookingId, clientName }: { bookingId: string; clientName: string }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+
     const formData = new FormData(e.currentTarget);
+    const body = {
+      bookingId,
+      type: formData.get("type") as string,
+      amountInput: formData.get("amountInput") as string,
+      category: formData.get("category") as string,
+      description: formData.get("description") as string,
+      date: formData.get("date") as string,
+    };
 
     startTransition(async () => {
-      const res = await fetch("/api/transactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bookingId,
-          type: formData.get("type"),
-          amountInput: formData.get("amountInput"),
-          category: formData.get("category"),
-          description: formData.get("description"),
-          date: formData.get("date"),
-        }),
-      });
-      const data = (await res.json()) as { ok: boolean; error?: string };
-      if (data.ok) {
-        setOpen(false);
-        router.refresh();
-      } else {
-        setError(data.error ?? "Failed to add transaction");
+      try {
+        const res = await fetch("/api/transactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          setError(data.error || "Failed to save transaction");
+        } else {
+          setOpen(false);
+          router.refresh();
+        }
+      } catch {
+        setError("Network error");
       }
     });
   }
@@ -46,77 +48,68 @@ export default function AddTransactionInline({ bookingId }: AddTransactionInline
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 font-semibold transition-colors"
+        className="w-full bg-[#131C2E] border border-dashed border-slate-700 rounded-xl p-4 text-xs text-slate-400 hover:text-amber-400 hover:border-amber-500/30 transition-colors font-medium flex items-center justify-center gap-2"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} className="w-3.5 h-3.5">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
-        Add transaction
+        Record a payment
       </button>
     );
   }
 
+  const today = new Date().toISOString().split("T")[0];
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 animate-slide-up">
+    <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-5 shadow-md space-y-4 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold text-white">Record Payment</h3>
+        <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-white text-xs">✕</button>
+      </div>
+
       {error && (
-        <p className="text-xs text-rose-400 font-semibold">{error}</p>
-      )}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <select
-          name="type"
-          defaultValue="INCOME"
-          className="bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-        >
-          <option value="INCOME">Income</option>
-          <option value="EXPENSE">Expense</option>
-        </select>
-        <input
-          name="amountInput"
-          required
-          placeholder="Amount (RM)"
-          className="bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
-        />
-        <input
-          name="description"
-          required
-          placeholder="Description"
-          className="bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white sm:col-span-2"
-        />
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <input
-          name="date"
-          type="date"
-          required
-          defaultValue={new Date().toLocaleDateString("en-CA")}
-          className="bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
-        />
-        <select
-          name="category"
-          className="bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-        >
-          <option value="">Category (optional)</option>
-          {TRANSACTION_CATEGORIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="flex-1 btn-primary text-xs font-bold rounded-lg py-2 disabled:opacity-50"
-          >
-            {isPending ? "Saving..." : "Add"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition-colors"
-          >
-            Cancel
-          </button>
+        <div className="px-3 py-2 bg-rose-500/15 border border-rose-500/30 rounded-lg text-xs text-rose-300 font-medium">
+          {error}
         </div>
-      </div>
-    </form>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Type</label>
+            <select name="type" defaultValue="INCOME" className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+              <option value="INCOME">Income</option>
+              <option value="EXPENSE">Expense</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Amount (RM)</label>
+            <input name="amountInput" required placeholder="0.00" className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Category</label>
+            <select name="category" defaultValue="Booking payment" className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+              {TRANSACTION_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Date</label>
+            <input name="date" type="date" defaultValue={today} required className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono" />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Description</label>
+          <input name="description" required defaultValue={`Payment from ${clientName}`} className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white" />
+        </div>
+
+        <button type="submit" disabled={isPending} className="btn-primary px-4 py-2 text-xs font-bold rounded-lg disabled:opacity-50 w-full">
+          {isPending ? "Saving..." : "Save Transaction"}
+        </button>
+      </form>
+    </div>
   );
 }

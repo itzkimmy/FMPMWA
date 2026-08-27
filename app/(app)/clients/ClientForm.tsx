@@ -7,13 +7,29 @@ import type { Client } from "@prisma/client";
 
 interface ClientFormProps {
   client?: Client;
+  mode?: "create" | "edit";
+  clientId?: string;
+  defaultValues?: {
+    name: string;
+    contact: string;
+    source: string;
+    notes: string;
+  };
 }
 
-export default function ClientForm({ client }: ClientFormProps) {
+export default function ClientForm({ client, mode, clientId, defaultValues }: ClientFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const isEdit = !!client;
+  const isEdit = mode === "edit" || !!client;
+  const editId = clientId || client?.id;
+
+  const defaults = defaultValues || {
+    name: client?.name ?? "",
+    contact: client?.contact ?? "",
+    source: client?.source ?? "",
+    notes: client?.notes ?? "",
+  };
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -21,8 +37,8 @@ export default function ClientForm({ client }: ClientFormProps) {
     const formData = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      const result = isEdit
-        ? await updateClientAction(client.id, formData)
+      const result = isEdit && editId
+        ? await updateClientAction(editId, formData)
         : await createClientAction(formData);
       if (!result.ok) setError(result.error);
     });
@@ -45,7 +61,7 @@ export default function ClientForm({ client }: ClientFormProps) {
             id="name"
             name="name"
             required
-            defaultValue={client?.name ?? ""}
+            defaultValue={defaults.name}
             placeholder="e.g. Maya Abdullah"
             className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
           />
@@ -58,7 +74,7 @@ export default function ClientForm({ client }: ClientFormProps) {
           <input
             id="contact"
             name="contact"
-            defaultValue={client?.contact ?? ""}
+            defaultValue={defaults.contact}
             placeholder="e.g. +60 12-345 6789 or @studio.client"
             className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
           />
@@ -72,7 +88,7 @@ export default function ClientForm({ client }: ClientFormProps) {
             id="source"
             name="source"
             list="source-list"
-            defaultValue={client?.source ?? ""}
+            defaultValue={defaults.source}
             placeholder="e.g. Instagram, Word of mouth, Referral"
             className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
           />
@@ -91,7 +107,7 @@ export default function ClientForm({ client }: ClientFormProps) {
             id="notes"
             name="notes"
             rows={3}
-            defaultValue={client?.notes ?? ""}
+            defaultValue={defaults.notes}
             placeholder="Preferences, shoot style, special requests..."
             className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white resize-none"
           />

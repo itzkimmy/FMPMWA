@@ -1,7 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { db } from "@/lib/db";
+import { toManilaDateString } from "@/lib/dates";
+import { formatMoney } from "@/lib/money";
 import EditBookingForm from "./EditBookingForm";
 
 interface EditBookingPageProps {
@@ -13,22 +16,38 @@ export default async function EditBookingPage({ params }: EditBookingPageProps) 
 
   const [booking, clients] = await Promise.all([
     db.booking.findUnique({ where: { id }, include: { client: true } }),
-    db.client.findMany({ orderBy: { name: "asc" } }),
+    db.client.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
   ]);
 
   if (!booking) notFound();
 
+  const bookingData = {
+    id: booking.id,
+    clientId: booking.clientId,
+    eventType: booking.eventType,
+    eventDate: toManilaDateString(booking.eventDate),
+    location: booking.location || "",
+    feeDisplay: (booking.feeCents / 100).toString(),
+    depositDisplay: (booking.depositCents / 100).toString(),
+    status: booking.status,
+    deliveryStatus: booking.deliveryStatus,
+    notes: booking.notes || "",
+  };
+
   return (
-    <div className="max-w-2xl animate-fade-in">
-      <div className="mb-6">
-        <h1 className="font-header text-xl font-semibold text-studio-text">
-          Edit booking
+    <div className="max-w-2xl space-y-5 animate-fade-in pb-10">
+      <div>
+        <Link href={`/bookings/${id}`} className="text-xs text-slate-400 hover:text-amber-400 font-medium transition-colors mb-1 inline-block">
+          ← Back to booking
+        </Link>
+        <h1 className="font-header text-xl font-bold text-white">
+          Edit Booking
         </h1>
-        <p className="text-sm text-studio-text-muted mt-0.5">
+        <p className="text-xs text-slate-400 mt-0.5">
           {booking.client.name} · {booking.eventType}
         </p>
       </div>
-      <EditBookingForm booking={booking} clients={clients} />
+      <EditBookingForm booking={bookingData} clients={clients} />
     </div>
   );
 }

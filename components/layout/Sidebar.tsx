@@ -1,22 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ReactNode;
-}
-
-const navItems: NavItem[] = [
+const navItems = [
   {
     label: "Dashboard",
     href: "/",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
       </svg>
     ),
   },
@@ -25,34 +19,17 @@ const navItems: NavItem[] = [
     href: "/bookings",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
       </svg>
     ),
   },
   {
-    label: "Clients",
-    href: "/clients",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Ledger",
+    label: "Finances",
     href: "/wages",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Calendar",
-    href: "/calendar",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.070.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
   },
@@ -79,40 +56,34 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="hidden md:flex flex-col w-60 min-h-screen bg-[#0F172A] border-r border-slate-800 flex-shrink-0 z-30 relative">
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+      <aside className="hidden md:flex flex-col w-56 min-h-screen bg-[#0F172A] border-r border-slate-800 flex-shrink-0 z-30 relative">
+        <div className="p-5 border-b border-slate-800">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-950 shadow-md transition-transform duration-200 group-hover:scale-105">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18m9-9H3m14.5 6.5l-13-13m13 0l-13 13" />
               </svg>
             </div>
-            <div>
-              <span className="font-header text-sm font-bold text-white tracking-tight block">
-                FlowMotion
-              </span>
-              <span className="text-[10px] uppercase font-mono tracking-wider text-amber-400 block -mt-0.5 font-semibold">
-                Studio Suite
-              </span>
-            </div>
+            <span className="font-header text-sm font-bold text-white tracking-tight">
+              FlowMotion
+            </span>
           </Link>
-          <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" title="Studio Active" />
         </div>
 
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-0.5">
           {navItems.map((item) => {
             const active = isActive(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
                   active
-                    ? "bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/25 shadow-sm"
+                    ? "bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/25"
                     : "text-slate-300 hover:text-white hover:bg-slate-800/70"
                 }`}
               >
-                <span className={active ? "text-amber-400" : "text-slate-400 group-hover:text-slate-200"}>
+                <span className={active ? "text-amber-400" : "text-slate-400"}>
                   {item.icon}
                 </span>
                 <span>{item.label}</span>
@@ -146,46 +117,7 @@ export default function Sidebar() {
           </div>
           <span className="font-header font-bold text-sm text-white">FlowMotion</span>
         </Link>
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800"
-          aria-label="Toggle menu"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
       </div>
-
-      {/* Mobile Drawer */}
-      {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col justify-end animate-fade-in">
-          <div className="bg-[#0F172A] border-t border-slate-800 rounded-t-2xl p-5 space-y-3 shadow-2xl animate-slide-up">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <span className="font-header font-bold text-base text-white">FlowMotion Menu</span>
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="p-1 text-slate-400 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2.5 p-3 rounded-lg bg-slate-800/80 border border-slate-700 text-xs font-medium text-slate-200 active:scale-95 transition-transform"
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

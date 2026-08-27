@@ -2,209 +2,147 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { formatMoneyCompact } from "@/lib/money";
+import { formatMoneyCompact, formatMoney } from "@/lib/money";
 import { formatDate, getCurrentMonthRange, todayManilaAsUtc } from "@/lib/dates";
-import { buildPaymentWatchList, getPaidCents } from "@/lib/payment-watch";
-import { detectConflicts } from "@/lib/conflicts";
-import { DeliveryStatusPill, BookingStatusPill } from "@/components/ui/StatusPill";
-import QuickActionBar from "@/components/dashboard/QuickActionBar";
-import PaymentWatchClient from "@/components/dashboard/PaymentWatchClient";
+import { BookingStatusPill, DeliveryStatusPill } from "@/components/ui/StatusPill";
+import MiniCalendar from "@/components/dashboard/MiniCalendar";
 
 export default async function DashboardPage() {
   const { start: monthStart, end: monthEnd } = getCurrentMonthRange();
   const today = todayManilaAsUtc();
 
   const [
-    monthIncomeAgg,
-    monthExpenseAgg,
-    allActiveBookings,
-    inPostProdCount,
-    recentTransactions,
+    activeBookings,
+    upcomingBookings,
+    monthIncome,
+    monthExpenses,
+    calendarBookings,
   ] = await Promise.all([
-    db.transaction.aggregate({
-      where: { type: "INCOME", date: { gte: monthStart, lte: monthEnd } },
-      _sum: { amountCents: true },
-    }),
-    db.transaction.aggregate({
-      where: { type: "EXPENSE", date: { gte: monthStart, lte: monthEnd } },
-      _sum: { amountCents: true },
+    db.booking.count({
+      where: { status: { in: ["INQUIRY", "CONFIRMED"] } },
     }),
     db.booking.findMany({
-      where: { status: { not: "CANCELLED" } },
-      include: { client: true, transactions: true },
-      orderBy: { eventDate: "asc" },
-    }),
-    db.booking.count({
       where: {
-        status: { not: "CANCELLED" },
-        deliveryStatus: { in: ["EDITING", "READY"] },
+        eventDate: { gte: today },
+        status: { in: ["INQUIRY", "CONFIRMED"] },
       },
+      include: {
+        client: true,
+        transactions: { where: { type: "INCOME" } },
+      },
+      orderBy: { eventDate: "asc" },
+      take: 8,
     }),
-    db.transaction.findMany({
-      orderBy: { date: "desc" },
-      take: 5,
-      include: { booking: { include: { client: true } } },
+    db.transaction.aggregate({
+      _sum: { amountCents: true },
+      where: { type: "INCOME", date: { gte: monthStart, lte: monthEnd } },
+    }),
+    db.transaction.aggregate({
+      _sum: { amountCents: true },
+      where: { type: "EXPENSE", date: { gte: monthStart, lte: monthEnd } },
+    }),
+    // Mini-calendar data: all bookings this month
+    db.booking.findMany({
+      where: { eventDate: { gte: monthStart, lte: monthEnd } },
+      select: { eventDate: true, status: true },
     }),
   ]);
 
-  // 1. Month Financial Metrics
-  const thisMonthIncome = monthIncomeAgg._sum.amountCents ?? 0;
-  const thisMonthExpenses = monthExpenseAgg._sum.amountCents ?? 0;
-  const thisMonthNet = thisMonthIncome - thisMonthExpenses;
+  const incomeCents = monthIncome._sum.amountCents ?? 0;
+  const expenseCents = monthExpenses._sum.amountCents ?? 0;
+  const netCents = incomeCents - expenseCents;
 
-  // 2. Pending Invoices (Total unpaid balances across all active bookings)
-  let totalPendingInvoicesCents = 0;
-  let pendingBookingsCount = 0;
-
-  for (const b of allActiveBookings) {
-    const paid = getPaidCents(b);
-    const balance = b.feeCents - paid;
-    if (balance > 0) {
-      totalPendingInvoicesCents += balance;
-      pendingBookingsCount += 1;
-    }
-  }
-
-  // 3. Shoots Scheduled in Current Month (with exact status breakdown)
-  const shootsThisMonth = allActiveBookings.filter((b) => {
-    const d = new Date(b.eventDate);
-    return d >= monthStart && d <= monthEnd;
-  });
-
-  const completedCount = shootsThisMonth.filter((b) => b.status === "COMPLETED").length;
-  const confirmedCount = shootsThisMonth.filter((b) => b.status === "CONFIRMED").length;
-  const inquiryCount = shootsThisMonth.filter((b) => b.status === "INQUIRY").length;
-
-  let shootsThisMonthSub = "No shoots scheduled";
-  if (shootsThisMonth.length > 0) {
-    const parts: string[] = [];
-    if (completedCount > 0) parts.push(`${completedCount} completed`);
-    if (confirmedCount > 0) parts.push(`${confirmedCount} confirmed`);
-    if (inquiryCount > 0) parts.push(`${inquiryCount} in inquiry`);
-    shootsThisMonthSub = parts.join(", ");
-  }
-
-  // 4. Upcoming Shoots List (shoots that still need execution, or upcoming dates)
-  const upcomingBookings = allActiveBookings
-    .filter((b) => new Date(b.eventDate) >= today && b.status !== "COMPLETED")
-    .slice(0, 8);
-
-  // 5. Payment Watch Items (Overdue or upcoming unpaid deposits)
-  const rawPaymentWatch = buildPaymentWatchList(allActiveBookings).slice(0, 5);
-  const paymentWatchItems = rawPaymentWatch.map((item) => ({
-    booking: {
-      id: item.booking.id,
-      eventType: item.booking.eventType,
-      eventDate: item.booking.eventDate.toISOString(),
-      client: {
-        name: item.booking.client.name,
-        contact: item.booking.client.contact,
-      },
-    },
-    dueCents: item.dueCents,
-    daysOverdue: item.daysOverdue,
+  // Calendar chips: which days have bookings
+  const bookedDays = calendarBookings.map((b) => ({
+    date: b.eventDate.toISOString(),
+    status: b.status,
   }));
 
-  // 6. Schedule Conflicts
-  const conflicts = detectConflicts(allActiveBookings);
-
   return (
-    <div className="space-y-6 max-w-7xl animate-fade-in pb-10">
-      <QuickActionBar />
-
-      {conflicts.length > 0 && (
-        <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 shadow-md animate-slide-up">
-          <div className="flex items-start gap-3">
-            <div className="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-300 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-xs font-bold text-rose-300 mb-1">
-                {conflicts.length} Schedule Conflict{conflicts.length > 1 ? "s" : ""} Detected
-              </p>
-              <ul className="space-y-0.5">
-                {conflicts.slice(0, 3).map((c, i) => (
-                  <li key={i} className="text-xs text-rose-200 flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-rose-400" />
-                    <span>{c.message}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+    <div className="max-w-5xl space-y-6 animate-fade-in pb-10">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="font-header text-xl font-bold text-white tracking-tight">
+            Dashboard
+          </h1>
+          <p className="text-xs text-slate-400 mt-0.5">Studio overview</p>
         </div>
-      )}
+        <Link
+          href="/bookings/new"
+          className="btn-primary flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-lg shadow-sm"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} className="w-3.5 h-3.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          New booking
+        </Link>
+      </div>
 
-      {/* 4 Stat Overview Cards */}
-      <section>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            label="Month Revenue"
-            value={formatMoneyCompact(thisMonthIncome)}
-            sub={`Net: ${formatMoneyCompact(thisMonthNet)}`}
-            subColor={thisMonthNet >= 0 ? "emerald" : "rose"}
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-emerald-400">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-              </svg>
-            }
-            iconBg="bg-emerald-500/10 border-emerald-500/20"
-          />
-
-          <StatCard
-            label="Pending Invoices"
-            value={formatMoneyCompact(totalPendingInvoicesCents)}
-            sub={`${pendingBookingsCount} booking${pendingBookingsCount === 1 ? "" : "s"}`}
-            subColor={totalPendingInvoicesCents > 0 ? "amber" : "slate"}
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-amber-400">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
-            iconBg="bg-amber-500/10 border-amber-500/20"
-          />
-
-          <StatCard
-            label="Shoots This Month"
-            value={String(shootsThisMonth.length)}
-            sub={shootsThisMonthSub}
-            subColor={shootsThisMonth.length > 0 ? "emerald" : "slate"}
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-blue-400">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-              </svg>
-            }
-            iconBg="bg-blue-500/10 border-blue-500/20"
-          />
-
-          <StatCard
-            label="In Post-Production"
-            value={String(inPostProdCount)}
-            sub={inPostProdCount > 0 ? "Pending deliverables" : "All deliverables clear"}
-            subColor={inPostProdCount > 0 ? "amber" : "slate"}
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-amber-400">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-              </svg>
-            }
-            iconBg="bg-amber-500/10 border-amber-500/20"
-          />
-        </div>
+      {/* Stat Cards */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard
+          label="Active Shoots"
+          value={String(activeBookings)}
+          icon={
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-amber-400">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+            </svg>
+          }
+          iconBg="bg-amber-500/10 border-amber-500/20"
+        />
+        <StatCard
+          label="This Month"
+          value={formatMoneyCompact(incomeCents)}
+          sub="income"
+          subColor="emerald"
+          icon={
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-emerald-400">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+            </svg>
+          }
+          iconBg="bg-emerald-500/10 border-emerald-500/20"
+        />
+        <StatCard
+          label="Expenses"
+          value={formatMoneyCompact(expenseCents)}
+          sub="this month"
+          subColor="rose"
+          icon={
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-rose-400">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6L9 12.75l4.286-4.286a11.948 11.948 0 014.306 6.43l.776 2.898m0 0l3.182-5.511m-3.182 5.51l-5.511-3.181" />
+            </svg>
+          }
+          iconBg="bg-rose-500/10 border-rose-500/20"
+        />
+        <StatCard
+          label="Net Profit"
+          value={formatMoneyCompact(netCents)}
+          sub={incomeCents > 0 ? `${Math.round((netCents / incomeCents) * 100)}% margin` : undefined}
+          subColor={netCents >= 0 ? "emerald" : "rose"}
+          icon={
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-amber-400">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.070.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+          iconBg="bg-amber-500/10 border-amber-500/20"
+        />
       </section>
 
-      {/* Upcoming Shoots & Payment Watch Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="bg-[#131C2E] rounded-xl border border-slate-800 shadow-md overflow-hidden">
+      {/* Upcoming Shoots + Mini Calendar */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Upcoming Shoots — takes 2/3 width */}
+        <section className="lg:col-span-2 bg-[#131C2E] rounded-xl border border-slate-800 shadow-md overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75">
             <div className="flex items-center gap-2">
               <h2 className="font-header text-sm font-semibold text-white">
                 Upcoming Shoots
               </h2>
-              <span className="text-2xs font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold border border-slate-700">
-                {upcomingBookings.length}
-              </span>
+              {upcomingBookings.length > 0 && (
+                <span className="text-2xs font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold border border-slate-700">
+                  {upcomingBookings.length}
+                </span>
+              )}
             </div>
             <Link
               href="/bookings"
@@ -223,112 +161,65 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <ul className="divide-y divide-slate-800">
-              {upcomingBookings.map((booking) => (
-                <li key={booking.id}>
-                  <Link
-                    href={`/bookings/${booking.id}`}
-                    className="flex items-center gap-4 px-5 py-3 hover:bg-[#182338] transition-colors group"
-                  >
-                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-800/80 border border-slate-700 flex flex-col items-center justify-center group-hover:border-slate-600 transition-colors">
-                      <p className="font-mono text-[9px] uppercase text-slate-300 leading-none">
-                        {new Date(booking.eventDate).toLocaleDateString("en-MY", {
-                          month: "short",
-                          timeZone: "Asia/Manila",
-                        })}
-                      </p>
-                      <p className="font-mono text-sm font-bold text-white leading-tight mt-0.5">
-                        {new Date(booking.eventDate).toLocaleDateString("en-MY", {
-                          day: "numeric",
-                          timeZone: "Asia/Manila",
-                        })}
-                      </p>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-white truncate group-hover:text-amber-400 transition-colors">
-                          {booking.client.name}
+              {upcomingBookings.map((booking) => {
+                const paidCents = booking.transactions.reduce((sum, t) => sum + t.amountCents, 0);
+                const unpaidCents = booking.feeCents - paidCents;
+                return (
+                  <li key={booking.id}>
+                    <Link
+                      href={`/bookings/${booking.id}`}
+                      className="flex items-center gap-4 px-5 py-3 hover:bg-[#182338] transition-colors group"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-800/80 border border-slate-700 flex flex-col items-center justify-center group-hover:border-slate-600 transition-colors">
+                        <p className="font-mono text-[9px] uppercase text-slate-300 leading-none">
+                          {new Date(booking.eventDate).toLocaleDateString("en-MY", { month: "short", timeZone: "Asia/Manila" })}
                         </p>
-                        <BookingStatusPill status={booking.status} />
+                        <p className="font-mono text-sm font-bold text-white leading-tight mt-0.5">
+                          {new Date(booking.eventDate).toLocaleDateString("en-MY", { day: "numeric", timeZone: "Asia/Manila" })}
+                        </p>
                       </div>
-                      <p className="text-xs text-slate-400 truncate mt-0.5">
-                        {booking.eventType}
-                        {booking.location ? ` • ${booking.location}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex-shrink-0 text-right space-y-1">
-                      <p className="font-mono text-xs font-bold text-white">
-                        {formatMoneyCompact(booking.feeCents)}
-                      </p>
-                      <DeliveryStatusPill status={booking.deliveryStatus} />
-                    </div>
-                  </Link>
-                </li>
-              ))}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-white truncate group-hover:text-amber-400 transition-colors">
+                            {booking.client.name}
+                          </p>
+                          <BookingStatusPill status={booking.status} />
+                        </div>
+                        <p className="text-xs text-slate-400 truncate mt-0.5">
+                          {booking.eventType}
+                          {booking.location ? ` · ${booking.location}` : ""}
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0 text-right space-y-1">
+                        <p className="font-mono text-xs font-bold text-white">
+                          {formatMoneyCompact(booking.feeCents)}
+                        </p>
+                        {unpaidCents > 0 ? (
+                          <span className="text-2xs font-mono font-semibold px-1.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                            {formatMoneyCompact(unpaidCents)} due
+                          </span>
+                        ) : (
+                          <DeliveryStatusPill status={booking.deliveryStatus} />
+                        )}
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
 
+        {/* Mini Calendar — takes 1/3 width */}
         <section className="bg-[#131C2E] rounded-xl border border-slate-800 shadow-md overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75">
-            <div className="flex items-center gap-2">
-              <h2 className="font-header text-sm font-semibold text-white">
-                Payment Watch
-              </h2>
-              {paymentWatchItems.length > 0 && (
-                <span className="text-2xs font-mono font-semibold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                  {paymentWatchItems.length} action{paymentWatchItems.length > 1 ? "s" : ""}
-                </span>
-              )}
-            </div>
-            <Link
-              href="/wages"
-              className="text-xs text-amber-400 hover:text-amber-300 font-medium transition-colors"
-            >
-              View ledger →
-            </Link>
+          <div className="px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75">
+            <h2 className="font-header text-sm font-semibold text-white">This Month</h2>
           </div>
-          <PaymentWatchClient items={paymentWatchItems} />
+          <div className="p-4">
+            <MiniCalendar bookedDays={bookedDays} />
+          </div>
         </section>
       </div>
-
-      {recentTransactions.length > 0 && (
-        <section className="bg-[#131C2E] rounded-xl border border-slate-800 shadow-md overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#0F172A]/75">
-            <h2 className="font-header text-sm font-semibold text-white">
-              Recent Ledger Activity
-            </h2>
-            <Link href="/wages" className="text-xs text-amber-400 hover:text-amber-300 font-medium">
-              Full Ledger →
-            </Link>
-          </div>
-          <ul className="divide-y divide-slate-800">
-            {recentTransactions.map((tx) => (
-              <li key={tx.id} className="flex items-center gap-4 px-5 py-3 hover:bg-[#182338] transition-colors">
-                <div
-                  className={`flex-shrink-0 w-2 h-2 rounded-full ${
-                    tx.type === "INCOME" ? "bg-emerald-400" : "bg-rose-400"
-                  }`}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-white truncate">{tx.description}</p>
-                  <p className="text-2xs text-slate-400 mt-0.5">
-                    {tx.category}
-                    {tx.booking ? ` • ${tx.booking.client.name}` : ""}
-                    {" • "}{formatDate(new Date(tx.date))}
-                  </p>
-                </div>
-                <span
-                  className={`font-mono text-xs font-bold ${
-                    tx.type === "INCOME" ? "text-emerald-400" : "text-rose-400"
-                  }`}
-                >
-                  {tx.type === "INCOME" ? "+" : "−"}{formatMoneyCompact(tx.amountCents)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </div>
   );
 }

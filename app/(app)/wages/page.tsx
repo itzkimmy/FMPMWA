@@ -111,7 +111,7 @@ export default async function WagesPage({ searchParams }: WagesPageProps) {
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="font-header text-xl font-bold text-white">Wages & Income</h1>
+          <h1 className="font-header text-xl font-bold text-white">Finances</h1>
           <p className="text-xs text-slate-400 mt-0.5">{monthLabel}</p>
         </div>
         <div className="flex items-center gap-3">
@@ -218,7 +218,7 @@ export default async function WagesPage({ searchParams }: WagesPageProps) {
                           {tx.category}
                         </span>
                       ) : (
-                        <span className="text-2xs text-slate-500">â€”</span>
+                        <span className="text-2xs text-slate-500">Ã¢â‚¬â€</span>
                       )}
                     </td>
                     <td className="px-5 py-3.5 hidden md:table-cell">
@@ -231,12 +231,12 @@ export default async function WagesPage({ searchParams }: WagesPageProps) {
                           <span className="text-slate-400">({tx.booking.eventType})</span>
                         </Link>
                       ) : (
-                        <span className="text-xs text-slate-500">â€”</span>
+                        <span className="text-xs text-slate-500">Ã¢â‚¬â€</span>
                       )}
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <span className={`font-mono text-xs font-bold ${tx.type === "INCOME" ? "text-emerald-400" : "text-rose-400"}`}>
-                        {tx.type === "INCOME" ? "+" : "âˆ’"}{formatMoney(tx.amountCents)}
+                        {tx.type === "INCOME" ? "+" : "Ã¢Ë†â€™"}{formatMoney(tx.amountCents)}
                       </span>
                     </td>
                   </tr>

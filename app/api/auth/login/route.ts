@@ -6,7 +6,7 @@ import { checkRateLimit, clearRateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({ passphrase: z.string().min(1) });
 
-// Default fallback hash for 'flowmotion123'
+
 const DEFAULT_HASH = "$2b$10$/fPTcJoBn/ZyjwaKj1z0NOOhHyl85hxn5Mg0rNZZeVPFnMNls0jWC";
 
 function getClientIp(request: NextRequest): string {

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import NotificationCenter from "./NotificationCenter";
 
 const PAGE_TITLES: Record<string, string> = {
   "/": "Dashboard",
@@ -43,12 +44,15 @@ export default function TopBar() {
         </h1>
       </div>
 
-      {/* Right: Currency Pill + Settings + Sign out */}
-      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+      {/* Right: Currency Pill + Notification Bell + Settings + Sign out */}
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-2xs font-mono text-slate-300">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
           <span>MYR (RM)</span>
         </div>
+
+        {/* Notification Center */}
+        <NotificationCenter />
 
         <Link
           href="/settings"

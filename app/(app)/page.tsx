@@ -65,19 +65,31 @@ export default async function DashboardPage() {
     }
   }
 
-  // 3. Shoots Scheduled in Current Month
+  // 3. Shoots Scheduled in Current Month (with exact status breakdown)
   const shootsThisMonth = allActiveBookings.filter((b) => {
     const d = new Date(b.eventDate);
     return d >= monthStart && d <= monthEnd;
   });
-  const confirmedShootsThisMonth = shootsThisMonth.filter((b) => b.status === "CONFIRMED").length;
 
-  // 4. Upcoming Shoots List (from today onwards, or latest active)
+  const completedCount = shootsThisMonth.filter((b) => b.status === "COMPLETED").length;
+  const confirmedCount = shootsThisMonth.filter((b) => b.status === "CONFIRMED").length;
+  const inquiryCount = shootsThisMonth.filter((b) => b.status === "INQUIRY").length;
+
+  let shootsThisMonthSub = "No shoots scheduled";
+  if (shootsThisMonth.length > 0) {
+    const parts: string[] = [];
+    if (completedCount > 0) parts.push(`${completedCount} completed`);
+    if (confirmedCount > 0) parts.push(`${confirmedCount} confirmed`);
+    if (inquiryCount > 0) parts.push(`${inquiryCount} in inquiry`);
+    shootsThisMonthSub = parts.join(", ");
+  }
+
+  // 4. Upcoming Shoots List (shoots that still need execution, or upcoming dates)
   const upcomingBookings = allActiveBookings
-    .filter((b) => new Date(b.eventDate) >= today)
+    .filter((b) => new Date(b.eventDate) >= today && b.status !== "COMPLETED")
     .slice(0, 8);
 
-  // 5. Payment Watch Items
+  // 5. Payment Watch Items (Overdue or upcoming unpaid deposits)
   const rawPaymentWatch = buildPaymentWatchList(allActiveBookings).slice(0, 5);
   const paymentWatchItems = rawPaymentWatch.map((item) => ({
     booking: {
@@ -157,13 +169,7 @@ export default async function DashboardPage() {
           <StatCard
             label="Shoots This Month"
             value={String(shootsThisMonth.length)}
-            sub={
-              shootsThisMonth.length === 0
-                ? "No shoots scheduled"
-                : confirmedShootsThisMonth === shootsThisMonth.length
-                ? `${confirmedShootsThisMonth} confirmed schedule`
-                : `${confirmedShootsThisMonth} confirmed, ${shootsThisMonth.length - confirmedShootsThisMonth} inquiry`
-            }
+            sub={shootsThisMonthSub}
             subColor={shootsThisMonth.length > 0 ? "emerald" : "slate"}
             icon={
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4 text-blue-400">

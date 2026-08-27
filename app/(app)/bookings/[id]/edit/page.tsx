@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { toManilaDateString } from "@/lib/dates";
-import { formatMoney } from "@/lib/money";
 import EditBookingForm from "./EditBookingForm";
 
 interface EditBookingPageProps {
@@ -23,7 +22,7 @@ export default async function EditBookingPage({ params }: EditBookingPageProps) 
 
   const bookingData = {
     id: booking.id,
-    clientId: booking.clientId,
+    clientName: booking.client.name,
     eventType: booking.eventType,
     eventDate: toManilaDateString(booking.eventDate),
     location: booking.location || "",

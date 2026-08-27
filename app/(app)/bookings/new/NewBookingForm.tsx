@@ -4,8 +4,16 @@ import { useState, useTransition, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createBookingAction } from "../actions";
-import { EVENT_TYPES, BOOKING_STATUS_VALUES, DELIVERY_STATUS_VALUES } from "@/lib/validation";
-import type { Client } from "@prisma/client";
+import {
+  BOOKING_STATUS_VALUES,
+  DELIVERY_STATUS_VALUES,
+  EVENT_TYPES,
+} from "@/lib/validation";
+
+interface Client {
+  id: string;
+  name: string;
+}
 
 interface NewBookingFormProps {
   clients: Client[];
@@ -48,30 +56,29 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
           Booking Details
         </h2>
 
-        {/* Client */}
+        {/* Client — free-text with autocomplete from existing clients */}
         <div>
-          <label htmlFor="clientId" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-            Client <span className="text-rose-400">*</span>
+          <label htmlFor="clientName" className="block text-2xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            Client Name <span className="text-rose-400">*</span>
           </label>
-          <select
-            id="clientId"
-            name="clientId"
+          <input
+            id="clientName"
+            name="clientName"
+            list="client-name-list"
             required
-            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-          >
-            <option value="">Select a client...</option>
+            autoComplete="off"
+            defaultValue={prefilledData?.clientName ?? ""}
+            placeholder="Type a name — existing clients appear as suggestions"
+            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition-colors"
+          />
+          <datalist id="client-name-list">
             {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.name} />
             ))}
-          </select>
-          {clients.length === 0 && (
-            <p className="text-xs text-rose-400 mt-1">
-              No clients yet.{" "}
-              <Link href="/clients/new" className="underline font-semibold text-amber-400">Add one first</Link>.
-            </p>
-          )}
+          </datalist>
+          <p className="text-2xs text-slate-500 mt-1">
+            Existing clients auto-suggest. New names create a new client automatically.
+          </p>
         </div>
 
         {/* Event type + date */}
@@ -87,7 +94,7 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
               required
               defaultValue={prefilledData?.eventType ?? ""}
               placeholder="Wedding, Portrait, Studio..."
-              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition-colors"
             />
             <datalist id="event-type-list">
               {EVENT_TYPES.map((t) => <option key={t} value={t} />)}
@@ -103,7 +110,7 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
               type="date"
               required
               defaultValue={prefilledData?.suggestedDate ?? ""}
-              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-500 transition-colors"
             />
           </div>
         </div>
@@ -118,7 +125,7 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
             name="location"
             defaultValue={prefilledData?.location ?? ""}
             placeholder="Venue, studio room, or city"
-            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition-colors"
           />
         </div>
 
@@ -133,7 +140,7 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
               name="feeInput"
               required
               placeholder="0.00"
-              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-500 transition-colors"
             />
           </div>
           <div>
@@ -144,7 +151,7 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
               id="depositInput"
               name="depositInput"
               placeholder="0.00"
-              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-500 transition-colors"
             />
           </div>
         </div>
@@ -159,7 +166,7 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
               id="status"
               name="status"
               defaultValue="INQUIRY"
-              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition-colors"
             >
               {BOOKING_STATUS_VALUES.map((s) => (
                 <option key={s} value={s}>
@@ -176,7 +183,7 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
               id="deliveryStatus"
               name="deliveryStatus"
               defaultValue="NOT_STARTED"
-              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+              className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition-colors"
             >
               {DELIVERY_STATUS_VALUES.map((s) => (
                 <option key={s} value={s}>
@@ -197,7 +204,7 @@ export default function NewBookingForm({ clients, prefilledData }: NewBookingFor
             name="notes"
             rows={4}
             placeholder="Shot list, special requirements, client preferences..."
-            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white resize-none"
+            className="w-full bg-[#0F172A] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white resize-none focus:outline-none focus:border-amber-500 transition-colors"
           />
         </div>
       </div>

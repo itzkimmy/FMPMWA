@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { db } from "@/lib/db";
 import SettingsForm from "./SettingsForm";
+import ResetDataSection from "./ResetDataSection";
 
 async function getSettings(): Promise<Record<string, string>> {
   const rows = await db.settings.findMany();
@@ -18,7 +19,7 @@ export default async function SettingsPage() {
           Settings
         </h1>
         <p className="text-xs text-slate-400 mt-0.5">
-          Studio defaults and preferences
+          Studio defaults, preferences, and data management
         </p>
       </div>
 
@@ -36,6 +37,9 @@ export default async function SettingsPage() {
           in your environment variables.
         </p>
       </div>
+
+      {/* Danger Zone: Reset All Data */}
+      <ResetDataSection />
     </div>
   );
 }

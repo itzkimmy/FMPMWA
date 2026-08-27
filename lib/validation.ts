@@ -5,7 +5,7 @@ import { sanitizeString } from "./sanitize";
  * Zod validation schemas with automatic sanitization.
  */
 
-// ─── Client Schema ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Client Schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const clientSchema = z.object({
   name: z
@@ -35,7 +35,7 @@ export const clientSchema = z.object({
 
 export type ClientFormData = z.infer<typeof clientSchema>;
 
-// ─── Booking Schema ────────────────────────────────────────────────────────
+// â”€â”€â”€ Booking Schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const BOOKING_STATUS_VALUES = [
   "INQUIRY",
@@ -65,7 +65,7 @@ export const EVENT_TYPES = [
 ] as const;
 
 export const bookingSchema = z.object({
-  clientId: z.string().min(1, "Client is required"),
+  clientName: z.string().min(1, "Client name is required").max(200).transform((val) => sanitizeString(val)),
   eventType: z
     .string()
     .min(1, "Event type is required")
@@ -82,7 +82,7 @@ export const bookingSchema = z.object({
     .string()
     .min(1, "Fee is required")
     .refine((v) => {
-      const n = parseFloat(v.replace(/(?:RM|rm|MYR|myr|₱|\$|[,\s])/g, ""));
+      const n = parseFloat(v.replace(/(?:RM|rm|MYR|myr|â‚±|\$|[,\s])/g, ""));
       return !isNaN(n) && n >= 0 && n <= 10000000;
     }, "Enter a valid fee amount"),
   depositInput: z.string().optional().or(z.literal("")),
@@ -98,7 +98,7 @@ export const bookingSchema = z.object({
 
 export type BookingFormData = z.infer<typeof bookingSchema>;
 
-// ─── Transaction Schema ────────────────────────────────────────────────────
+// â”€â”€â”€ Transaction Schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const TRANSACTION_CATEGORIES = [
   "Booking payment",
@@ -121,7 +121,7 @@ export const transactionSchema = z.object({
     .string()
     .min(1, "Amount is required")
     .refine((v) => {
-      const n = parseFloat(v.replace(/(?:RM|rm|MYR|myr|₱|\$|[,\s])/g, ""));
+      const n = parseFloat(v.replace(/(?:RM|rm|MYR|myr|â‚±|\$|[,\s])/g, ""));
       return !isNaN(n) && n > 0 && n <= 10000000;
     }, "Enter a valid amount greater than 0"),
   category: z
@@ -140,7 +140,7 @@ export const transactionSchema = z.object({
 
 export type TransactionFormData = z.infer<typeof transactionSchema>;
 
-// ─── Rate Card Schema ──────────────────────────────────────────────────────
+// â”€â”€â”€ Rate Card Schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const rateCardSchema = z.object({
   photographyHalfDay: z.number().int().min(0).max(100000000).optional(),
@@ -160,7 +160,7 @@ export const rateCardSchema = z.object({
 
 export type RateCard = z.infer<typeof rateCardSchema>;
 
-// ─── Login Schema ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Login Schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const loginSchema = z.object({
   passphrase: z.string().min(1, "Passphrase is required").max(100),

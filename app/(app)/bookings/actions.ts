@@ -6,12 +6,31 @@ import { db } from "@/lib/db";
 import { bookingSchema } from "@/lib/validation";
 import { parseMoneyCents } from "@/lib/money";
 import { manilaDateToUtc } from "@/lib/dates";
+import { sanitizeString } from "@/lib/sanitize";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
 function parseAmountCents(input: string | undefined | null): number {
   if (!input || input.trim() === "") return 0;
   return parseMoneyCents(input) ?? 0;
+}
+
+/** Find existing client by name (case-insensitive), or create a new one */
+async function resolveClientId(clientName: string): Promise<string> {
+  const name = sanitizeString(clientName).trim();
+  if (!name) throw new Error("Client name is required");
+
+  // Try to find existing client (case-insensitive match)
+  const existing = await db.client.findFirst({
+    where: { name: { equals: name, mode: "insensitive" } },
+  });
+
+  if (existing) return existing.id;
+
+  // Create a new client on the fly
+  const created = await db.client.create({ data: { name } });
+  revalidatePath("/clients");
+  return created.id;
 }
 
 export async function createBookingAction(
@@ -26,7 +45,7 @@ export async function createBookingAction(
   }
 
   const {
-    clientId,
+    clientName,
     eventType,
     eventDate,
     location,
@@ -47,6 +66,8 @@ export async function createBookingAction(
   let newBookingId: string | null = null;
 
   try {
+    const clientId = await resolveClientId(clientName);
+
     const booking = await db.booking.create({
       data: {
         clientId,
@@ -65,7 +86,8 @@ export async function createBookingAction(
     revalidatePath("/");
   } catch (err) {
     console.error("[createBookingAction]", err);
-    return { ok: false, error: "Failed to save booking" };
+    const msg = err instanceof Error ? err.message : "Failed to save booking";
+    return { ok: false, error: msg };
   }
 
   if (newBookingId) {
@@ -88,7 +110,7 @@ export async function updateBookingAction(
   }
 
   const {
-    clientId,
+    clientName,
     eventType,
     eventDate,
     location,
@@ -109,6 +131,8 @@ export async function updateBookingAction(
   let updated = false;
 
   try {
+    const clientId = await resolveClientId(clientName);
+
     await db.booking.update({
       where: { id },
       data: {
@@ -129,7 +153,8 @@ export async function updateBookingAction(
     revalidatePath("/");
   } catch (err) {
     console.error("[updateBookingAction]", err);
-    return { ok: false, error: "Failed to update booking" };
+    const msg = err instanceof Error ? err.message : "Failed to update booking";
+    return { ok: false, error: msg };
   }
 
   if (updated) {

@@ -11,6 +11,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/clients": "Clients",
   "/clients/new": "New Client",
   "/wages": "Finances",
+  "/reports": "Reports & Analytics",
   "/calendar": "Calendar",
   "/settings": "Settings",
 };
@@ -29,7 +30,7 @@ export default function TopBar() {
   const title = getTitle(pathname);
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-14 px-4 sm:px-6 border-b border-slate-800 bg-[#0F172A]/90 backdrop-blur-md flex-shrink-0 w-full">
+    <header className="sticky top-0 z-30 flex items-center justify-between h-14 px-4 sm:px-6 border-b border-slate-800 bg-[#0F172A]/90 backdrop-blur-md flex-shrink-0 w-full print:hidden">
       {/* Left: Mobile Brand Icon + Page Title */}
       <div className="flex items-center gap-2.5 min-w-0">
         <Link href="/" className="md:hidden flex items-center gap-2 flex-shrink-0">

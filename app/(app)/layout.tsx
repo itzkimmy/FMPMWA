@@ -5,22 +5,19 @@ import { ToastProvider } from "@/components/ui/ToastProvider";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ToastProvider>
-      <div className="flex h-screen overflow-hidden bg-studio-bg">
-        {/* Desktop Sidebar */}
-        <Sidebar />
+    <div className="min-h-screen bg-[#0B0F17] flex flex-col md:flex-row w-full overflow-x-hidden">
+      {/* Desktop sidebar */}
+      <Sidebar />
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <TopBar />
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 pb-24 md:pb-8">
-            {children}
-          </main>
-        </div>
-
-        {/* Mobile Bottom Navigation Bar */}
+      {/* Main content column */}
+      <div className="flex-1 flex flex-col min-w-0 w-full">
+        <TopBar />
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 max-w-6xl w-full mx-auto pb-24 md:pb-8 overflow-x-hidden">
+          <ToastProvider>{children}</ToastProvider>
+        </main>
+        {/* Mobile bottom navigation bar */}
         <BottomNav />
       </div>
-    </ToastProvider>
+    </div>
   );
 }

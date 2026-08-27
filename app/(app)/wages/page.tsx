@@ -107,14 +107,14 @@ export default async function WagesPage({ searchParams }: WagesPageProps) {
   );
 
   return (
-    <div className="max-w-5xl space-y-6 animate-fade-in pb-10">
+    <div className="max-w-5xl space-y-5 animate-fade-in pb-10 w-full">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-header text-xl font-bold text-white">Finances</h1>
+          <h1 className="font-header text-xl font-bold text-white tracking-tight">Finances</h1>
           <p className="text-xs text-slate-400 mt-0.5">{monthLabel}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <MonthSelect currentMonth={currentMonthStr} months={months} />
           <AddTransactionButton />
         </div>
@@ -127,20 +127,20 @@ export default async function WagesPage({ searchParams }: WagesPageProps) {
       />
 
       {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-4 shadow-md">
           <p className="text-2xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Gross Income</p>
-          <p className="font-mono text-2xl font-bold text-emerald-400">{formatMoneyCompact(incomeCents)}</p>
+          <p className="font-mono text-xl sm:text-2xl font-bold text-emerald-400">{formatMoneyCompact(incomeCents)}</p>
           <p className="text-2xs text-slate-400 mt-1">{monthLabel}</p>
         </div>
         <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-4 shadow-md">
           <p className="text-2xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Expenses</p>
-          <p className="font-mono text-2xl font-bold text-rose-400">{formatMoneyCompact(expensesCents)}</p>
+          <p className="font-mono text-xl sm:text-2xl font-bold text-rose-400">{formatMoneyCompact(expensesCents)}</p>
           <p className="text-2xs text-slate-400 mt-1">{monthLabel}</p>
         </div>
         <div className="bg-[#131C2E] border border-slate-800 rounded-xl p-4 shadow-md">
           <p className="text-2xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Net Profit</p>
-          <p className={`font-mono text-2xl font-bold ${netCents >= 0 ? "text-white" : "text-rose-400"}`}>
+          <p className={`font-mono text-xl sm:text-2xl font-bold ${netCents >= 0 ? "text-white" : "text-rose-400"}`}>
             {formatMoneyCompact(netCents)}
           </p>
           <p className="text-2xs text-slate-400 mt-1">
@@ -183,45 +183,45 @@ export default async function WagesPage({ searchParams }: WagesPageProps) {
           description="Log booking payments or studio expenses to keep your ledger accurate."
           icon={
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
             </svg>
           }
         />
       ) : (
         <div className="bg-[#131C2E] border border-slate-800 rounded-xl overflow-hidden shadow-md">
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto no-scrollbar">
+            <table className="w-full min-w-[500px]">
               <thead>
                 <tr className="border-b border-slate-800 bg-[#0F172A]/75">
-                  <th className="px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider">Date</th>
-                  <th className="px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider">Description</th>
-                  <th className="px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider hidden sm:table-cell">Category</th>
-                  <th className="px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider hidden md:table-cell">Booking</th>
-                  <th className="px-5 py-3 text-right text-2xs font-semibold text-slate-300 uppercase tracking-wider">Amount</th>
+                  <th className="px-4 sm:px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider">Date</th>
+                  <th className="px-4 sm:px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider">Description</th>
+                  <th className="px-4 sm:px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider hidden sm:table-cell">Category</th>
+                  <th className="px-4 sm:px-5 py-3 text-left text-2xs font-semibold text-slate-300 uppercase tracking-wider hidden md:table-cell">Booking</th>
+                  <th className="px-4 sm:px-5 py-3 text-right text-2xs font-semibold text-slate-300 uppercase tracking-wider">Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {transactions.map((tx) => (
                   <tr key={tx.id} className="hover:bg-[#182338] transition-colors group">
-                    <td className="px-5 py-3.5">
+                    <td className="px-4 sm:px-5 py-3.5 whitespace-nowrap">
                       <span className="font-mono text-xs text-slate-400">{formatDate(new Date(tx.date))}</span>
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="px-4 sm:px-5 py-3.5">
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full flex-shrink-0 ${tx.type === "INCOME" ? "bg-emerald-400" : "bg-rose-400"}`} />
                         <span className="text-xs font-semibold text-white">{tx.description}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 hidden sm:table-cell">
+                    <td className="px-4 sm:px-5 py-3.5 hidden sm:table-cell whitespace-nowrap">
                       {tx.category ? (
                         <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-2xs text-slate-300 font-medium">
                           {tx.category}
                         </span>
                       ) : (
-                        <span className="text-2xs text-slate-500">Ã¢â‚¬â€</span>
+                        <span className="text-2xs text-slate-500">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 hidden md:table-cell">
+                    <td className="px-4 sm:px-5 py-3.5 hidden md:table-cell whitespace-nowrap">
                       {tx.booking ? (
                         <Link
                           href={`/bookings/${tx.booking.id}`}
@@ -231,12 +231,12 @@ export default async function WagesPage({ searchParams }: WagesPageProps) {
                           <span className="text-slate-400">({tx.booking.eventType})</span>
                         </Link>
                       ) : (
-                        <span className="text-xs text-slate-500">Ã¢â‚¬â€</span>
+                        <span className="text-xs text-slate-500">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-right">
+                    <td className="px-4 sm:px-5 py-3.5 text-right whitespace-nowrap">
                       <span className={`font-mono text-xs font-bold ${tx.type === "INCOME" ? "text-emerald-400" : "text-rose-400"}`}>
-                        {tx.type === "INCOME" ? "+" : "Ã¢Ë†â€™"}{formatMoney(tx.amountCents)}
+                        {tx.type === "INCOME" ? "+" : "−"}{formatMoney(tx.amountCents)}
                       </span>
                     </td>
                   </tr>

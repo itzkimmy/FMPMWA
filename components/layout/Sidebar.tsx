@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 
 const navItems = [
   {
@@ -47,7 +46,6 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
@@ -55,69 +53,55 @@ export default function Sidebar() {
   }
 
   return (
-    <>
-      <aside className="hidden md:flex flex-col w-56 min-h-screen bg-[#0F172A] border-r border-slate-800 flex-shrink-0 z-30 relative">
-        <div className="p-5 border-b border-slate-800">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-950 shadow-md transition-transform duration-200 group-hover:scale-105">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18m9-9H3m14.5 6.5l-13-13m13 0l-13 13" />
-              </svg>
-            </div>
-            <span className="font-header text-sm font-bold text-white tracking-tight">
-              FlowMotion
-            </span>
-          </Link>
-        </div>
-
-        <nav className="flex-1 p-3 space-y-0.5">
-          {navItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
-                  active
-                    ? "bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/25"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/70"
-                }`}
-              >
-                <span className={active ? "text-amber-400" : "text-slate-400"}>
-                  {item.icon}
-                </span>
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="p-3 border-t border-slate-800">
-          <form action="/api/auth/logout" method="POST">
-            <button
-              type="submit"
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors font-medium"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-              </svg>
-              <span>Sign out</span>
-            </button>
-          </form>
-        </div>
-      </aside>
-
-      {/* Mobile Sticky Header */}
-      <div className="md:hidden sticky top-0 z-40 bg-[#0F172A]/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center text-slate-950 shadow-sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} className="w-3.5 h-3.5">
+    <aside className="hidden md:flex flex-col w-56 min-h-screen bg-[#0F172A] border-r border-slate-800 flex-shrink-0 z-30 relative">
+      <div className="p-5 border-b border-slate-800">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-slate-950 shadow-md transition-transform duration-200 group-hover:scale-105">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18m9-9H3m14.5 6.5l-13-13m13 0l-13 13" />
             </svg>
           </div>
-          <span className="font-header font-bold text-sm text-white">FlowMotion</span>
+          <span className="font-header text-sm font-bold text-white tracking-tight">
+            FlowMotion
+          </span>
         </Link>
       </div>
-    </>
+
+      <nav className="flex-1 p-3 space-y-0.5">
+        {navItems.map((item) => {
+          const active = isActive(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                active
+                  ? "bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/25"
+                  : "text-slate-300 hover:text-white hover:bg-slate-800/70"
+              }`}
+            >
+              <span className={active ? "text-amber-400" : "text-slate-400"}>
+                {item.icon}
+              </span>
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="p-3 border-t border-slate-800">
+        <form action="/api/auth/logout" method="POST">
+          <button
+            type="submit"
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors font-medium"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+            </svg>
+            <span>Sign out</span>
+          </button>
+        </form>
+      </div>
+    </aside>
   );
 }

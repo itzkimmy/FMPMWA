@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 
 const PAGE_TITLES: Record<string, string> = {
   "/": "Dashboard",
-  "/bookings": "Bookings & Shoots",
+  "/bookings": "Bookings",
   "/bookings/new": "New Booking",
-  "/clients": "Client Roster",
+  "/clients": "Clients",
   "/clients/new": "New Client",
-  "/wages": "Wages & Financial Ledger",
-  "/calendar": "Shoot Calendar",
-  "/settings": "Studio Settings",
+  "/wages": "Finances",
+  "/calendar": "Calendar",
+  "/settings": "Settings",
 };
 
 function getTitle(pathname: string): string {
@@ -28,10 +28,10 @@ export default function TopBar() {
   const title = getTitle(pathname);
 
   return (
-    <header className="flex items-center justify-between h-14 px-4 md:px-6 border-b border-slate-800 bg-[#0F172A]/85 backdrop-blur-md flex-shrink-0 z-20">
-      {/* Left title & mobile brand */}
+    <header className="sticky top-0 z-30 flex items-center justify-between h-14 px-4 sm:px-6 border-b border-slate-800 bg-[#0F172A]/90 backdrop-blur-md flex-shrink-0 w-full">
+      {/* Left: Mobile Brand Icon + Page Title */}
       <div className="flex items-center gap-2.5 min-w-0">
-        <Link href="/" className="md:hidden flex items-center gap-2 flex-shrink-0 mr-1">
+        <Link href="/" className="md:hidden flex items-center gap-2 flex-shrink-0">
           <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center text-slate-950 shadow-sm">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18m9-9H3m14.5 6.5l-13-13m13 0l-13 13" />
@@ -43,7 +43,7 @@ export default function TopBar() {
         </h1>
       </div>
 
-      {/* Right actions (Status dot, Settings, Sign out) */}
+      {/* Right: Currency Pill + Settings + Sign out */}
       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-2xs font-mono text-slate-300">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
@@ -64,13 +64,13 @@ export default function TopBar() {
         <form action="/api/auth/logout" method="POST">
           <button
             type="submit"
-            className="px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-2xs font-semibold rounded-lg border border-rose-500/20 transition-colors flex items-center gap-1"
+            className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold rounded-lg border border-rose-500/20 transition-colors flex items-center gap-1.5"
             title="Sign out of FlowMotion"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-3.5 h-3.5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
             </svg>
-            <span className="hidden xs:inline">Sign out</span>
+            <span className="hidden md:inline">Sign out</span>
           </button>
         </form>
       </div>
